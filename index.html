@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三年级数学：钱币小测验闯关游戏</title>
+    <title>三年级数学：钱币终极闯关游戏</title>
     <style>
         * { box-sizing: border-box; }
         body { 
             font-family: 'Comic Sans MS', 'Microsoft YaHei', sans-serif; 
-            background-color: #f7f9fc; 
+            background-color: #f0f4f8; 
             display: flex; 
             flex-direction: column;
             align-items: center;
@@ -20,14 +20,14 @@
         #game-box { 
             background: white; 
             padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
-            max-width: 750px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            max-width: 800px; 
             width: 100%;
             text-align: center; 
-            border: 3px solid #4a90e2; 
+            border: 4px solid #4a90e2; 
         }
-        h2 { color: #2c3e50; margin-top: 0; font-size: 1.6rem; }
+        h2 { color: #2c3e50; margin-top: 0; font-size: 1.8rem; }
         .hint { 
             color: #4a5568; 
             font-size: 1rem; 
@@ -48,372 +48,137 @@
             padding: 12px 25px; 
             border-radius: 12px; 
         }
-        .stat-item {
-            font-size: 1.1rem; 
-            font-weight: bold;
-            color: #4a5568;
-        }
+        .stat-item { font-size: 1.1rem; font-weight: bold; color: #4a5568; }
         #timer { color: #3182ce; }
         #score { color: #38a169; }
         #level { color: #805ad5; }
         
-        .game-area { 
-            display: flex; 
-            justify-content: space-between;
-            width: 100%; 
-            margin-top: 20px; 
-            gap: 20px;
-        }
-        .column { 
-            display: flex;
-            flex-direction: column;
-            width: 50%; 
-            gap: 12px;
-        }
+        /* 关卡通用区域 */
+        .game-stage { display: none; width: 100%; min-height: 350px; }
+        .game-stage.active { display: block; }
+
+        /* 第一关：严格顺序连线样式 */
+        .line-area { display: flex; justify-content: space-between; gap: 20px; }
+        .column { display: flex; flex-direction: column; width: 50%; gap: 10px; }
         .item { 
-            padding: 15px; 
-            background: #ffffff; 
-            border: 2px solid #cbd5e0; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            user-select: none; 
-            transition: all 0.2s ease; 
-            font-size: 0.95rem; 
-            color: #2d3748;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            min-height: 58px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            width: 100%;
+            padding: 12px; background: #ffffff; border: 2px solid #cbd5e0; border-radius: 12px; 
+            cursor: pointer; user-select: none; transition: all 0.2s ease; font-size: 0.95rem; 
+            color: #2d3748; min-height: 55px; display: flex; align-items: center; justify-content: center; text-align: center; 
         }
-        /* 锁定未解锁的题目样式 */
-        .item.locked {
-            background: #f1f3f5;
-            border-color: #e2e8f0;
-            color: #a0aec0;
-            cursor: not-allowed;
-            box-shadow: none;
+        .item.locked { background: #f1f3f5; border-color: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
+        .item.active-target { border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); font-weight: bold; }
+        .item.selected { background: #ebf8ff; border-color: #3182ce; color: #2b6cb0; font-weight: bold; }
+        .item.matched { background: #f0fff4; border-color: #38a169; color: #276749; pointer-events: none; opacity: 0.65; }
+        .item.wrong { background: #fff5f5; border-color: #e53e3e; color: #9b2c2c; animation: shake 0.4s ease-in-out; }
+
+        /* 第二关：拖拽思维导图样式 */
+        .mindmap-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .branches { display: flex; justify-content: space-around; width: 100%; gap: 20px; margin-top: 10px; }
+        .branch-box { 
+            width: 45%; min-height: 180px; background: #f8fafc; border: 3px dashed #cbd5e0; 
+            border-radius: 15px; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; 
+            align-content: flex-start; justify-content: center; transition: all 0.3s;
         }
-        .item.locked:hover {
-            transform: none;
-            background: #f1f3f5;
-            border-color: #e2e8f0;
+        .branch-box.drag-over { background: #edf2f7; border-color: #4a90e2; }
+        .branch-title { width: 100%; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; color: #2d3748; }
+        #needs-box .branch-title { color: #dd6b20; }
+        #wants-box .branch-title { color: #3182ce; }
+        .pool-title { font-weight: bold; color: #718096; margin-top: 10px; }
+        .drag-pool { 
+            width: 100%; min-height: 80px; background: #edf2f7; border-radius: 12px; 
+            padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
         }
-        /* 当前正在作答的题目样式提示 */
-        .item.active-target {
-            border-color: #4a90e2;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-            font-weight: bold;
+        .drag-card { 
+            padding: 10px 18px; background: #ffffff; border: 2px solid #cbd5e0; border-radius: 20px; 
+            cursor: grab; font-weight: bold; color: #4a5568; box-shadow: 0 3px 6px rgba(0,0,0,0.05); user-select: none;
         }
-        .item:hover { 
-            background: #f7fafc; 
-            border-color: #4a90e2; 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        .drag-card.placed { background: #c6f6d5; border-color: #38a169; color: #22543d; cursor: default; }
+
+        /* 第三关：竖式输入样式 */
+        .math-container { display: flex; flex-direction: column; gap: 20px; align-items: center; padding: 10px; }
+        .math-row { 
+            display: flex; align-items: center; justify-content: space-between; 
+            width: 100%; max-width: 650px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;
         }
-        .item.selected { 
-            background: #ebf8ff; 
-            border-color: #3182ce; 
-            color: #2b6cb0; 
-            font-weight: bold; 
-            box-shadow: 0 0 0 1px #3182ce;
+        .math-formula { font-size: 1.1rem; font-weight: bold; color: #2d3748; text-align: left; flex: 1; line-height: 1.5; }
+        .math-input { 
+            width: 160px; padding: 8px 12px; font-size: 1.1rem; border: 2px solid #cbd5e0; 
+            border-radius: 8px; text-align: right; font-weight: bold; color: #2b6cb0;
         }
-        .item.matched { 
-            background: #f0fff4; 
-            border-color: #38a169; 
-            color: #276749; 
-            pointer-events: none; 
-            opacity: 0.65; 
-            font-weight: bold;
-        }
-        .item.wrong { 
-            background: #fff5f5; 
-            border-color: #e53e3e; 
-            color: #9b2c2c; 
-            animation: shake 0.4s ease-in-out; 
-        }
-        #msg { 
-            margin-top: 25px; 
-            font-size: 1.2rem; 
-            font-weight: bold; 
-            min-height: 35px; 
-            color: #2d3748; 
-            padding: 12px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
+        .math-input:focus { border-color: #3182ce; outline: none; }
+        .math-input.correct { background-color: #c6f6d5; border-color: #38a169; color: #22543d; pointer-events: none; }
+        .math-input.incorrect { background-color: #fff5f5; border-color: #e53e3e; color: #9b2c2c; }
+
+        /* 公共提示与按钮 */
+        #msg { margin-top: 25px; font-size: 1.2rem; font-weight: bold; min-height: 35px; color: #2d3748; padding: 12px; border-radius: 8px; }
         .btn { 
-            margin-top: 20px; 
-            padding: 12px 40px; 
-            background: #3182ce; 
-            color: white; 
-            border: none; 
-            border-radius: 25px; 
-            cursor: pointer; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            box-shadow: 0 4px 10px rgba(49,130,206,0.3);
-            transition: all 0.2s;
+            margin-top: 20px; padding: 12px 40px; background: #3182ce; color: white; border: none; 
+            border-radius: 25px; cursor: pointer; font-size: 1.1rem; font-weight: bold; box-shadow: 0 4px 10px rgba(49,130,206,0.3); transition: all 0.2s;
         }
-        .btn:hover { 
-            background: #2b6cb0; 
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(49,130,206,0.4);
-        }
-        @keyframes shake { 
-            0%, 100% { transform: translateX(0); } 
-            20%, 60% { transform: translateX(-6px); } 
-            40%, 80% { transform: translateX(6px); } 
-        }
+        .btn:hover { background: #2b6cb0; transform: translateY(-1px); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
     </style>
 </head>
 <body>
 
 <div id="game-box">
-    <h2>🪙 三年级数学单元四：钱币小测验闯关游戏</h2>
-    <div id="hint-text" class="hint">请按照从上到下的顺序作答。先点击左侧处于激活状态（高亮蓝色框）的题目，再在右侧找出正确答案。答对一组后，才会解锁下一组题目！</div>
+    <h2>🪙 三年级数学单元四：钱币大冒险</h2>
+    <div id="hint-text" class="hint">准备好了吗？点击下方按钮开始游戏，系统将开始正向计时！</div>
     
     <div class="stats-bar">
         <div class="stat-item">⏱️ 用时: <span id="timer">0</span> 秒</div>
-        <div class="stat-item">⭐ 关卡: <span id="level">1/2</span></div>
+        <div class="stat-item">⭐ 关卡: <span id="level">1/3</span></div>
         <div class="stat-item">✨ 得分: <span id="score">0</span></div>
     </div>
     
-    <div class="game-area">
-        <div class="column" id="left-col"></div>
-        <div class="column" id="right-col"></div>
+    <div id="stage-1" class="game-stage">
+        <div class="line-area">
+            <div class="column" id="left-col-1"></div>
+            <div class="column" id="right-col-1"></div>
+        </div>
     </div>
 
-    <div id="msg">点击下方按钮开始挑战，系统将记录你的答题用时！</div>
+    <div id="stage-2" class="game-stage">
+        <div class="mindmap-container">
+            <div class="branches">
+                <div class="branch-box" id="needs-box" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="handleDrop(event, 'needs')">
+                    <div class="branch-title">🌾 需求 (Needs)</div>
+                </div>
+                <div class="branch-box" id="wants-box" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="handleDrop(event, 'wants')">
+                    <div class="branch-title">🧸 要求 (Wants)</div>
+                </div>
+            </div>
+            <div class="pool-title">👇 请把下面的物品拖拽到上面对应的思维导图分支中：</div>
+            <div class="drag-pool" id="item-pool"></div>
+        </div>
+    </div>
+
+    <div id="stage-3" class="game-stage">
+        <div class="math-container" id="math-questions-box"></div>
+    </div>
+
+    <div id="msg">点击按钮启动测验！</div>
     <button id="action-btn" class="btn" onclick="initGame()">开始游戏</button>
 </div>
 
 <script>
-    // 关卡完整题库
-    const levels = [
-        {
-            hint: "💡 <b>第一关：东南亚各国货币辨识</b><br>请依次点击左侧高亮的题目描述，并在右侧点击匹配正确的国家和货币！",
-            data: [
-                { id: 1, left: "纸币印有“Singapore”及首任总统肖像", right: "元 (Dollar) - 新加坡" },
-                { id: 2, left: "纸币印有“CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM”及胡志明头像", right: "盾 (Dong) - 越南" },
-                { id: 3, left: "纸币印有“Thailand”及现任泰王头像", right: "泰铢 (Baht) - 泰国" },
-                { id: 4, left: "纸币印有“NEGARA BRUNEI DARUSSALAM”及苏丹头像", right: "元 (Dollar) - 文莱" },
-                { id: 5, left: "纸币印有“REPUBLIKA NG PILIPINAS”字样", right: "比索 (Peso) - 菲律宾" },
-                { id: 6, left: "纸币印有“Bank Indonesia”及具有“SAMPLE”字样的水印", right: "盾 (Rupiah) - 印度尼西亚" },
-                { id: 7, left: "纸币印有缅甸国家标志及“Central Bank of Myanmar”字样", right: "元 (Kyat) - 缅甸" },
-                { id: 8, left: "纸币印有老挝文字及国家纪念碑图案", right: "基普 (Kip) - 老挝" },
-                { id: 9, left: "纸币印有柬埔寨王宫及相关文化符号", right: "瑞尔 (Riel) - 柬埔寨" }
-            ]
-        },
-        {
-            hint: "💡 <b>第二关：理财观念与生活决策分类</b><br>请依次对左侧的高亮物品进行分类，点击右侧的“需求”或“要求”！",
-            data: [
-                { id: 10, left: "白饭", right: "需求 (Needs)" },
-                { id: 11, left: "房子", right: "需求 (Needs)" },
-                { id: 12, left: "衣服", right: "需求 (Needs)" },
-                { id: 13, left: "水", right: "需求 (Needs)" },
-                { id: 14, left: "化妆品", right: "要求 (Wants)" },
-                { id: 15, left: "零食", right: "要求 (Wants)" },
-                { id: 16, left: "玩具 / 电子游戏", right: "要求 (Wants)" },
-                { id: 17, left: "珠宝", right: "要求 (Wants)" },
-                { id: 18, left: "智能手机", right: "要求 (Wants)" }
-            ]
-        }
+    // 第一关数据（不包含国家名称）
+    const stage1Data = [
+        { id: 1, left: "纸币印有“Singapore”及首任总统肖像", right: "元 (Dollar)" },
+        { id: 2, left: "纸币印有“CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM”及胡志明头像", right: "盾 (Dong)" },
+        { id: 3, left: "纸币印有“Thailand”及现任泰王头像", right: "泰铢 (Baht)" },
+        { id: 4, left: "纸币印有“NEGARA BRUNEI DARUSSALAM”及苏丹头像", right: "元 (Dollar) " }, 
+        { id: 5, left: "纸币印有“REPUBLIKA NG PILIPINAS”字样", right: "比索 (Peso)" },
+        { id: 6, left: "纸币印有“Bank Indonesia”及具有“SAMPLE”字样的水印", right: "盾 (Rupiah)" },
+        { id: 7, left: "纸币印有缅甸国家标志及“Central Bank of Myanmar”字样", right: "元 (Kyat)" },
+        { id: 8, left: "纸币印有老挝文字及国家纪念碑图案", right: "基普 (Kip)" },
+        { id: 9, left: "纸币印有柬埔寨王宫及相关文化符号", right: "瑞尔 (Riel)" }
     ];
 
-    let currentLevel = 0;
-    let score = 0;
-    let timeElapsed = 0;
-    let timerInterval = null;
-    let selectedLeft = null;
-    let selectedRight = null;
-    let matchedCount = 0;
-    let isPlaying = false;
-    
-    // 核心更改：存储当前关卡左侧按原本顺序排列的数据，用于严格限定答题顺序
-    let leftOrderedData = []; 
-
-    function shuffle(array) {
-        return array.sort(() => Math.random() - 0.5);
-    }
-
-    function initGame() {
-        score = 0;
-        timeElapsed = 0;
-        currentLevel = 0;
-        isPlaying = true;
-        document.getElementById('action-btn').style.display = "none";
-        document.getElementById('score').innerText = score;
-        document.getElementById('timer').innerText = timeElapsed;
-        
-        // 正向计时（从0秒递增）
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeElapsed++;
-            document.getElementById('timer').innerText = timeElapsed;
-        }, 1000);
-
-        loadLevel(currentLevel);
-    }
-
-    function loadLevel(lvlIdx) {
-        matchedCount = 0;
-        selectedLeft = null;
-        selectedRight = null;
-        
-        const lvl = levels[lvlIdx];
-        // 保持左侧在关卡内部是固定顺序（以便逐个解锁推进），右侧答案进行彻底打乱增加寻找乐趣
-        leftOrderedData = [...lvl.data]; 
-        const rightShuffledItems = shuffle([...lvl.data]);
-
-        document.getElementById('level').innerText = `${lvlIdx + 1}/${levels.length}`;
-        document.getElementById('hint-text').innerHTML = lvl.hint;
-        document.getElementById('msg').style.backgroundColor = "transparent";
-        document.getElementById('msg').style.color = "#2d3748";
-        document.getElementById('msg').innerText = "请点击上方高亮蓝色外框的第一题开始配对！";
-
-        const leftCol = document.getElementById('left-col');
-        const rightCol = document.getElementById('right-col');
-        leftCol.innerHTML = '';
-        rightCol.innerHTML = '';
-
-        // 渲染左侧题目（带锁定控制）
-        leftOrderedData.forEach((item, index) => {
-            let statusClass = "item locked";
-            // 默认第一个题目是激活状态
-            if (index === 0) {
-                statusClass = "item active-target";
-            }
-            leftCol.innerHTML += `<div class="${statusClass}" id="left-item-${index}" data-id="${item.id}" data-index="${index}" onclick="clickLeft(this)">${item.left}</div>`;
-        });
-
-        // 渲染右侧被打乱的答案
-        rightShuffledItems.forEach(item => {
-            rightCol.innerHTML += `<div class="item" data-id="${item.id}" onclick="clickRight(this)">${item.right}</div>`;
-        });
-    }
-
-    function clickLeft(el) {
-        if (!isPlaying || el.classList.contains('matched') || el.classList.contains('locked')) return;
-        
-        document.querySelectorAll('#left-col .item').forEach(i => i.classList.remove('selected'));
-        el.classList.add('selected');
-        selectedLeft = el;
-        checkMatch();
-    }
-
-    function clickRight(el) {
-        if (!isPlaying || el.classList.contains('matched')) return;
-        
-        document.querySelectorAll('#right-col .item').forEach(i => i.classList.remove('selected'));
-        el.classList.add('selected');
-        selectedRight = el;
-        checkMatch();
-    }
-
-    function checkMatch() {
-        if (selectedLeft && selectedRight) {
-            const leftId = parseInt(selectedLeft.getAttribute('data-id'));
-            const rightId = parseInt(selectedRight.getAttribute('data-id'));
-            const currentIndex = parseInt(selectedLeft.getAttribute('data-index'));
-
-            let isCorrect = false;
-            // 第一关：ID完全绝对匹配
-            if (currentLevel === 0 && leftId === rightId) {
-                isCorrect = true;
-            } 
-            // 第二关：支持分类多对一模糊判定（10-13为需求，14-18为要求）
-            else if (currentLevel === 1) {
-                const isLeftNeed = leftId <= 13;
-                const isRightNeed = rightId <= 13;
-                if (isLeftNeed === isRightNeed) isCorrect = true;
-            }
-
-            const msgEl = document.getElementById('msg');
-            if (isCorrect) {
-                // 1. 即时回馈：变绿、移除选中、改变状态
-                selectedLeft.classList.remove('selected', 'active-target');
-                selectedRight.classList.remove('selected');
-                selectedLeft.classList.add('matched');
-                selectedRight.classList.add('matched');
-                
-                score += 10;
-                matchedCount++;
-                document.getElementById('score').innerText = score;
-                
-                msgEl.style.color = "#155724";
-                msgEl.style.backgroundColor = "#d4edda";
-                msgEl.innerText = "✅ 答对了！配对正确，积分 +10";
-                
-                // 2. 核心推进逻辑：只有答对了，才去解锁左侧的“下一组”
-                const nextIndex = currentIndex + 1;
-                if (nextIndex < leftOrderedData.length) {
-                    const nextLeftEl = document.getElementById(`left-item-${nextIndex}`);
-                    if (nextLeftEl) {
-                        nextLeftEl.classList.remove('locked');
-                        nextLeftEl.classList.add('active-target'); // 高亮下一题
-                    }
-                }
-
-                // 检查这一关是不是全答完了
-                if (matchedCount === leftOrderedData.length) {
-                    nextLevel();
-                }
-            } else {
-                // 配对失败：即时变红并剧烈晃动，但不影响当前的作答资格
-                const l = selectedLeft;
-                const r = selectedRight;
-                l.classList.add('wrong');
-                r.classList.add('wrong');
-                
-                msgEl.style.color = "#721c24";
-                msgEl.style.backgroundColor = "#f8d7da";
-                msgEl.innerText = "❌ 连错了，请继续为此题尝试其他答案！";
-                
-                setTimeout(() => {
-                    l.classList.remove('selected', 'wrong');
-                    r.classList.remove('selected', 'wrong');
-                }, 400);
-            }
-            // 清理单次连线，准备下一次尝试
-            selectedLeft = null;
-            selectedRight = null;
-        }
-    }
-
-    function nextLevel() {
-        currentLevel++;
-        if (currentLevel < levels.length) {
-            setTimeout(() => {
-                document.getElementById('msg').style.backgroundColor = "#e2e8f0";
-                document.getElementById('msg').style.color = "#4a5568";
-                document.getElementById('msg').innerText = "🎉 这一关顺利通过！正在为您解锁下一大关...";
-                setTimeout(() => {
-                    loadLevel(currentLevel);
-                }, 1500);
-            }, 500);
-        } else {
-            setTimeout(() => {
-                endGame();
-            }, 500);
-        }
-    }
-
-    function endGame() {
-        clearInterval(timerInterval);
-        isPlaying = false;
-        const btn = document.getElementById('action-btn');
-        btn.style.display = "inline-block";
-        btn.innerText = "重新挑战";
-        
-        const msgEl = document.getElementById('msg');
-        msgEl.style.color = "#2b6cb0";
-        msgEl.style.backgroundColor = "#ebf8ff";
-        msgEl.innerHTML = `🏆 <b>恭喜完美通关！</b><br>✨ 最终得分：${score} 分<br>⏱️ 测验总耗时：<span style="color:#e53e3e; font-size:1.4rem;">${timeElapsed}</span> 秒！快把成绩报告给老师吧！`;
-    }
-</script>
-
-</body>
-</html>
+    // 第二关数据
+    const stage2Data = [
+        { name: "白饭", type: "needs" }, { name: "房子", type: "needs" }, 
+        { name: "衣服", type: "needs" }, { name: "水", type: "needs" },
+        { name: "化妆品", type: "wants" }, { name: "零食", type: "wants" }, 
+        { name: "玩具", type: "wants" }, { name: "珠宝", type: "wants" }, 
+        { name: "电子游戏", type: "wants" }, { name: "智能
