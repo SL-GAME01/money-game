@@ -158,14 +158,13 @@
     </div>
 
     <div id="msg">点击按钮启动测验！</div>
-    <button id="action-btn" class="btn" onclick="initGame()">开始游戏</button>
+    <button id="action-btn" class="btn">开始游戏</button>
 </div>
 
 <script>
-    // 第一关数据（不包含国家名称）
     const stage1Data = [
         { id: 1, left: "纸币印有“Singapore”及首任总统肖像", right: "元 (Dollar)" },
-        { id: 2, left: "纸币印有“CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM”及胡志明头像", right: "盾 (Dong)" },
+        { id: 2, left: "纸币印有“CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆ特南”及胡志明头像", right: "盾 (Dong)" },
         { id: 3, left: "纸币印有“Thailand”及现任泰王头像", right: "泰铢 (Baht)" },
         { id: 4, left: "纸币印有“NEGARA BRUNEI DARUSSALAM”及苏丹头像", right: "元 (Dollar) " }, 
         { id: 5, left: "纸币印有“REPUBLIKA NG PILIPINAS”字样", right: "比索 (Peso)" },
@@ -175,10 +174,277 @@
         { id: 9, left: "纸币印有柬埔寨王宫及相关文化符号", right: "瑞尔 (Riel)" }
     ];
 
-    // 第二关数据
     const stage2Data = [
         { name: "白饭", type: "needs" }, { name: "房子", type: "needs" }, 
         { name: "衣服", type: "needs" }, { name: "水", type: "needs" },
         { name: "化妆品", type: "wants" }, { name: "零食", type: "wants" }, 
         { name: "玩具", type: "wants" }, { name: "珠宝", type: "wants" }, 
-        { name: "电子游戏", type: "wants" }, { name: "智能
+        { name: "电子游戏", type: "wants" }, { name: "智能手机", type: "wants" }
+    ];
+
+    const stage3Data = [
+        { formula: "① RM1,645.90 + RM359.50 - RM1,507.10 =", ans: "RM498.30" },
+        { formula: "② RM7,816.90 - RM164.40 + RM123.80 =", ans: "RM7,776.30" },
+        { formula: "③ RM4,025 - RM2,703.30 - 4,270 sen =<br><small style='color:grey; font-weight:normal;'>(提示: 4,270 sen = RM42.70)</small>", ans: "RM1,279" }
+    ];
+
+    let currentStage = 1;
+    let score = 0;
+    let timeElapsed = 0;
+    let timerInterval = null;
+    let isPlaying = false;
+
+    let selectedLeft = null, selectedRight = null, stage1Matches = 0;
+    let stage2Matches = 0;
+
+    function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+    // 强化保护：使用 window.onload 确保按钮和元素 100% 具备可点击状态
+    window.onload = function() {
+        const startBtn = document.getElementById('action-btn');
+        if(startBtn) {
+            startBtn.onclick = initGame;
+        }
+    };
+
+    function initGame() {
+        score = 0; timeElapsed = 0; currentStage = 1; isPlaying = true;
+        document.getElementById('action-btn').style.display = "none";
+        document.getElementById('score').innerText = score;
+        document.getElementById('timer').innerText = timeElapsed;
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeElapsed++;
+            document.getElementById('timer').innerText = timeElapsed;
+        }, 1000);
+
+        startStage1();
+    }
+
+    // ==================== 第一关逻辑：连线 ====================
+    function startStage1() {
+        currentStage = 1; stage1Matches = 0;
+        document.getElementById('level').innerText = "1/3";
+        document.getElementById('hint-text').innerHTML = "💡 <b>第一关：东南亚各国货币辨识</b><br>请严格按照从上到下的顺序作答！点击左侧处于激活状态（带蓝色外框）的题目，再在右侧找出正确答案。答对一组才会解锁下一组！";
+        
+        showStageContainer(1);
+        const rightShuffled = shuffle([...stage1Data]);
+
+        const leftCol = document.getElementById('left-col-1');
+        const rightCol = document.getElementById('right-col-1');
+        leftCol.innerHTML = ''; rightCol.innerHTML = '';
+
+        stage1Data.forEach((item, index) => {
+            let cls = "item locked";
+            if (index === 0) cls = "item active-target";
+            leftCol.innerHTML += `<div class="${cls}" id="s1-left-${index}" data-id="${item.id}" data-index="${index}">${item.left}</div>`;
+        });
+
+        rightShuffled.forEach(item => {
+            rightCol.innerHTML += `<div class="item" data-id="${item.id}">${item.right}</div>`;
+        });
+
+        // 强力事件绑定，解决老旧浏览器 onclick 不响应的情况
+        document.querySelectorAll('#left-col-1 .item').forEach(el => {
+            el.addEventListener('click', function() { clickLeft1(this); });
+        });
+        document.querySelectorAll('#right-col-1 .item').forEach(el => {
+            el.addEventListener('click', function() { clickRight1(this); });
+        });
+
+        updateMsg("请点击左边第 1 题开始匹配！", "transparent", "#2d3748");
+    }
+
+    function clickLeft1(el) {
+        if (el.classList.contains('matched') || el.classList.contains('locked')) return;
+        document.querySelectorAll('#left-col-1 .item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected'); selectedLeft = el; checkMatch1();
+    }
+
+    function clickRight1(el) {
+        if (el.classList.contains('matched')) return;
+        document.querySelectorAll('#right-col-1 .item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected'); selectedRight = el; checkMatch1();
+    }
+
+    function checkMatch1() {
+        if (selectedLeft && selectedRight) {
+            const leftId = parseInt(selectedLeft.getAttribute('data-id'));
+            const rightId = parseInt(selectedRight.getAttribute('data-id'));
+            const idx = parseInt(selectedLeft.getAttribute('data-index'));
+
+            if (leftId === rightId) {
+                selectedLeft.classList.remove('selected', 'active-target');
+                selectedRight.classList.remove('selected');
+                selectedLeft.classList.add('matched'); selectedRight.classList.add('matched');
+                
+                score += 10; stage1Matches++;
+                document.getElementById('score').innerText = score;
+                updateMsg("✅ 答对啦！解锁下一题。", "#d4edda", "#155724");
+
+                const nextIdx = idx + 1;
+                const nextLeft = document.getElementById(`s1-left-${nextIdx}`);
+                if (nextLeft) {
+                    nextLeft.classList.remove('locked'); nextLeft.classList.add('active-target');
+                }
+                if (stage1Matches === stage1Data.length) { setTimeout(startStage2, 1200); }
+            } else {
+                const l = selectedLeft, r = selectedRight;
+                l.classList.add('wrong'); r.classList.add('wrong');
+                updateMsg("❌ 连错了，请继续为此题寻找正确的货币！", "#fff5f5", "#e53e3e");
+                setTimeout(() => { l.classList.remove('selected', 'wrong'); r.classList.remove('selected', 'wrong'); }, 400);
+            }
+            selectedLeft = null; selectedRight = null;
+        }
+    }
+
+    // ==================== 第二关逻辑：思维导图拖拽 ====================
+    function startStage2() {
+        currentStage = 2; stage2Matches = 0;
+        document.getElementById('level').innerText = "2/3";
+        document.getElementById('hint-text').innerHTML = "💡 <b>第二关：理财观念树形分类图</b><br>请用鼠标按住下方的物品，手动将它们拖拽移动到上方的<b>【需求】</b>或<b>【要求】</b>分类框里！";
+        showStageContainer(2);
+
+        document.getElementById('needs-box').innerHTML = '<div class="branch-title">🌾 需求 (Needs)</div>';
+        document.getElementById('wants-box').innerHTML = '<div class="branch-title">🧸 要求 (Wants)</div>';
+
+        const shuffledPool = shuffle([...stage2Data]);
+        const poolEl = document.getElementById('item-pool');
+        poolEl.innerHTML = '';
+        shuffledPool.forEach((item, index) => {
+            poolEl.innerHTML += `<div class="drag-card" id="card-${index}" draggable="true" ondragstart="dragStart(event)" data-type="${item.type}">${item.name}</div>`;
+        });
+        updateMsg("请把物品卡片拖入上方分类树分支中！", "transparent", "#2d3748");
+    }
+
+    function dragStart(e) { e.dataTransfer.setData("text/plain", e.target.id); }
+    function allowDrop(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+    function handleDrop(e, targetType) {
+        e.preventDefault();
+        const box = e.currentTarget; box.classList.remove('drag-over');
+        
+        const cardId = e.dataTransfer.getData("text/plain");
+        const cardEl = document.getElementById(cardId);
+        if(!cardEl) return;
+        const itemType = cardEl.getAttribute('data-type');
+
+        if (itemType === targetType) {
+            cardEl.removeAttribute('draggable'); cardEl.classList.add('placed');
+            box.appendChild(cardEl);
+            score += 10; stage2Matches++;
+            document.getElementById('score').innerText = score;
+            updateMsg(`✅ 分类正确！“${cardEl.innerText}”属于${targetType === 'needs'?'需求':'要求'}。`, "#d4edda", "#155724");
+            if (stage2Matches === stage2Data.length) { setTimeout(startStage3, 1500); }
+        } else {
+            updateMsg(`❌ 放错啦！“${cardEl.innerText}”不属于这一类，再想想！`, "#fff5f5", "#e53e3e");
+        }
+    }
+
+    // ==================== 第三关逻辑：严格规范限制输入 ====================
+    function startStage3() {
+        currentStage = 3;
+        document.getElementById('level').innerText = "3/3";
+        document.getElementById('hint-text').innerHTML = "💡 <b>第三关：RM10,000以内钱币运算练习</b><br>请在草稿纸上使用<b>竖式进行计算</b>，并在右侧输入结果。<br>⚠️ <b>注意：</b>钱币单位必须严格写成大写 <b>RM</b>（例如：<b>RM498.30</b>）。如果写成小写 rm 系统会判定为错误！";
+        showStageContainer(3);
+
+        const container = document.getElementById('math-questions-box');
+        container.innerHTML = '';
+
+        stage3Data.forEach((q, index) => {
+            container.innerHTML += `
+                <div class="math-row">
+                    <div class="math-formula">${q.formula}</div>
+                    <input type="text" class="math-input" id="math-ans-${index}" placeholder="输入结果">
+                </div>
+            `;
+        });
+
+        // 核心加固：改用专门的独立 EventListener 绑定，确保在各种平台下输入框都能完美响应点击与输入
+        stage3Data.forEach((q, index) => {
+            const inputEl = document.getElementById(`math-ans-${index}`);
+            if(inputEl) {
+                inputEl.addEventListener('input', function() {
+                    checkMathAns(index);
+                });
+            }
+        });
+
+        updateMsg("请在纸上列竖式计算，并在右边输入标准大写 RM 答案！", "transparent", "#2d3748");
+    }
+
+    function checkMathAns(idx) {
+        const inputEl = document.getElementById(`math-ans-${idx}`);
+        if(!inputEl) return;
+        
+        let userAns = inputEl.value.trim().replace(/\s+/g, '').replace(/,/g, ''); // 只移空格和逗号
+        const standardAns = stage3Data[idx].ans.replace(/,/g, '');
+
+        // 学生写小写 rm，立刻判定为错误并报红
+        if (userAns.startsWith('rm')) {
+            inputEl.classList.add('incorrect');
+            updateMsg("❌ 错误！钱币单位书写不规范，必须使用大写 RM，小写 rm 是不对的！", "#fff5f5", "#e53e3e");
+            return;
+        }
+
+        if (userAns === standardAns) {
+            inputEl.classList.remove('incorrect');
+            inputEl.classList.add('correct');
+            score += 20;
+            document.getElementById('score').innerText = score;
+            updateMsg("✅ 竖式计算及书写完全正确！获得 20 分！", "#d4edda", "#155724");
+
+            let allDone = true;
+            for(let i=0; i<stage3Data.length; i++) {
+                const inp = document.getElementById(`math-ans-${i}`);
+                if(!inp || !inp.classList.contains('correct')) allDone = false;
+            }
+            if(allDone) { setTimeout(endGame, 1000); }
+        } else {
+            if (userAns.length >= standardAns.length) {
+                inputEl.classList.add('incorrect');
+                updateMsg("❌ 答案不正确，请重新检查你的竖式计算和单位大小写！", "#fff5f5", "#e53e3e");
+            } else {
+                inputEl.classList.remove('incorrect');
+            }
+        }
+    }
+
+    // ==================== 工具公共函数 ====================
+    function showStageContainer(stageNum) {
+        document.querySelectorAll('.game-stage').forEach(s => s.classList.remove('active'));
+        const activeStage = document.getElementById(`stage-${stageNum}`);
+        if(activeStage) activeStage.classList.add('active');
+    }
+
+    function updateMsg(text, bgColor, textColor) {
+        const msg = document.getElementById('msg');
+        if(msg) {
+            msg.innerHTML = text; msg.style.backgroundColor = bgColor; msg.style.color = textColor;
+        }
+    }
+
+    function endGame() {
+        clearInterval(timerInterval); isPlaying = false;
+        document.querySelectorAll('.game-stage').forEach(s => s.classList.remove('active'));
+        
+        const btn = document.getElementById('action-btn');
+        if(btn) {
+            btn.style.display = "inline-block"; btn.innerText = "重新挑战";
+            btn.onclick = initGame; // 保证重洗页面可点
+        }
+        
+        document.getElementById('hint-text').innerHTML = "🎉 挑战达成！";
+        updateMsg(
+            `🏆 <b>恭喜完美通过全部三关测试！</b><br>` +
+            `✨ 最终总得分：<span style='color:#38a169; font-size:1.4rem;'>${score}</span> 分<br>` +
+            `⏱️ 测验总耗时：<span style='color:#e53e3e; font-size:1.4rem;'>${timeElapsed}</span> 秒！<br>` +
+            `<small style='color:#718096;'>不仅竖式算得准，RM 货币单位书写也完全规范，太棒了！</small>`, 
+            "#ebf8ff", "#2b6cb0"
+        );
+    }
+</script>
+
+</body>
+</html>
