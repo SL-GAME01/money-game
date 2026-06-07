@@ -88,6 +88,25 @@
             text-align: center;
             width: 100%;
         }
+        /* 锁定未解锁的题目样式 */
+        .item.locked {
+            background: #f1f3f5;
+            border-color: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .item.locked:hover {
+            transform: none;
+            background: #f1f3f5;
+            border-color: #e2e8f0;
+        }
+        /* 当前正在作答的题目样式提示 */
+        .item.active-target {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+            font-weight: bold;
+        }
         .item:hover { 
             background: #f7fafc; 
             border-color: #4a90e2; 
@@ -154,7 +173,7 @@
 
 <div id="game-box">
     <h2>🪙 三年级数学单元四：钱币小测验闯关游戏</h2>
-    <div id="hint-text" class="hint">点击左边的题目，再点击右边对应的答案。系统会即时判定对错！每答对一组才能进行下一组配对。</div>
+    <div id="hint-text" class="hint">请按照从上到下的顺序作答。先点击左侧处于激活状态（高亮蓝色框）的题目，再在右侧找出正确答案。答对一组后，才会解锁下一组题目！</div>
     
     <div class="stats-bar">
         <div class="stat-item">⏱️ 用时: <span id="timer">0</span> 秒</div>
@@ -172,10 +191,10 @@
 </div>
 
 <script>
-    // 关卡数据
+    // 关卡完整题库
     const levels = [
         {
-            hint: "💡 <b>第一关：东南亚各国货币辨识</b><br>请根据左侧各国的纸币视觉特征，找出右侧对应的正确货币单位与国家！",
+            hint: "💡 <b>第一关：东南亚各国货币辨识</b><br>请依次点击左侧高亮的题目描述，并在右侧点击匹配正确的国家和货币！",
             data: [
                 { id: 1, left: "纸币印有“Singapore”及首任总统肖像", right: "元 (Dollar) - 新加坡" },
                 { id: 2, left: "纸币印有“CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM”及胡志明头像", right: "盾 (Dong) - 越南" },
@@ -189,7 +208,7 @@
             ]
         },
         {
-            hint: "💡 <b>第二关：理财观念与生活决策分类</b><br>请把左侧的生活物品，精准分类到右侧的“需求 (Needs)”或“要求 (Wants)”中！",
+            hint: "💡 <b>第二关：理财观念与生活决策分类</b><br>请依次对左侧的高亮物品进行分类，点击右侧的“需求”或“要求”！",
             data: [
                 { id: 10, left: "白饭", right: "需求 (Needs)" },
                 { id: 11, left: "房子", right: "需求 (Needs)" },
@@ -212,6 +231,9 @@
     let selectedRight = null;
     let matchedCount = 0;
     let isPlaying = false;
+    
+    // 核心更改：存储当前关卡左侧按原本顺序排列的数据，用于严格限定答题顺序
+    let leftOrderedData = []; 
 
     function shuffle(array) {
         return array.sort(() => Math.random() - 0.5);
@@ -226,7 +248,7 @@
         document.getElementById('score').innerText = score;
         document.getElementById('timer').innerText = timeElapsed;
         
-        // 正向计时（累加秒数）
+        // 正向计时（从0秒递增）
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             timeElapsed++;
@@ -242,32 +264,40 @@
         selectedRight = null;
         
         const lvl = levels[lvlIdx];
+        // 保持左侧在关卡内部是固定顺序（以便逐个解锁推进），右侧答案进行彻底打乱增加寻找乐趣
+        leftOrderedData = [...lvl.data]; 
+        const rightShuffledItems = shuffle([...lvl.data]);
+
         document.getElementById('level').innerText = `${lvlIdx + 1}/${levels.length}`;
         document.getElementById('hint-text').innerHTML = lvl.hint;
         document.getElementById('msg').style.backgroundColor = "transparent";
         document.getElementById('msg').style.color = "#2d3748";
-        document.getElementById('msg').innerText = "请点击左侧题目与右侧对应答案！";
-
-        // 随机打乱左右两列
-        const leftItems = shuffle([...lvl.data]);
-        const rightItems = shuffle([...lvl.data]);
+        document.getElementById('msg').innerText = "请点击上方高亮蓝色外框的第一题开始配对！";
 
         const leftCol = document.getElementById('left-col');
         const rightCol = document.getElementById('right-col');
         leftCol.innerHTML = '';
         rightCol.innerHTML = '';
 
-        leftItems.forEach(item => {
-            leftCol.innerHTML += `<div class="item" data-id="${item.id}" onclick="clickLeft(this)">${item.left}</div>`;
+        // 渲染左侧题目（带锁定控制）
+        leftOrderedData.forEach((item, index) => {
+            let statusClass = "item locked";
+            // 默认第一个题目是激活状态
+            if (index === 0) {
+                statusClass = "item active-target";
+            }
+            leftCol.innerHTML += `<div class="${statusClass}" id="left-item-${index}" data-id="${item.id}" data-index="${index}" onclick="clickLeft(this)">${item.left}</div>`;
         });
 
-        rightItems.forEach(item => {
+        // 渲染右侧被打乱的答案
+        rightShuffledItems.forEach(item => {
             rightCol.innerHTML += `<div class="item" data-id="${item.id}" onclick="clickRight(this)">${item.right}</div>`;
         });
     }
 
     function clickLeft(el) {
-        if (!isPlaying || el.classList.contains('matched')) return;
+        if (!isPlaying || el.classList.contains('matched') || el.classList.contains('locked')) return;
+        
         document.querySelectorAll('#left-col .item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         selectedLeft = el;
@@ -276,6 +306,7 @@
 
     function clickRight(el) {
         if (!isPlaying || el.classList.contains('matched')) return;
+        
         document.querySelectorAll('#right-col .item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         selectedRight = el;
@@ -286,13 +317,14 @@
         if (selectedLeft && selectedRight) {
             const leftId = parseInt(selectedLeft.getAttribute('data-id'));
             const rightId = parseInt(selectedRight.getAttribute('data-id'));
+            const currentIndex = parseInt(selectedLeft.getAttribute('data-index'));
 
             let isCorrect = false;
-            // 第一关：ID必须完全一样（一对一）
+            // 第一关：ID完全绝对匹配
             if (currentLevel === 0 && leftId === rightId) {
                 isCorrect = true;
             } 
-            // 第二关：多对一模糊分类判定（10-13为需求，14-18为要求）
+            // 第二关：支持分类多对一模糊判定（10-13为需求，14-18为要求）
             else if (currentLevel === 1) {
                 const isLeftNeed = leftId <= 13;
                 const isRightNeed = rightId <= 13;
@@ -301,8 +333,8 @@
 
             const msgEl = document.getElementById('msg');
             if (isCorrect) {
-                // 配对成功：即时变绿变灰并锁定
-                selectedLeft.classList.remove('selected');
+                // 1. 即时回馈：变绿、移除选中、改变状态
+                selectedLeft.classList.remove('selected', 'active-target');
                 selectedRight.classList.remove('selected');
                 selectedLeft.classList.add('matched');
                 selectedRight.classList.add('matched');
@@ -315,12 +347,22 @@
                 msgEl.style.backgroundColor = "#d4edda";
                 msgEl.innerText = "✅ 答对了！配对正确，积分 +10";
                 
-                // 检查当前关卡是否全部连完
-                if (matchedCount === levels[currentLevel].data.length) {
+                // 2. 核心推进逻辑：只有答对了，才去解锁左侧的“下一组”
+                const nextIndex = currentIndex + 1;
+                if (nextIndex < leftOrderedData.length) {
+                    const nextLeftEl = document.getElementById(`left-item-${nextIndex}`);
+                    if (nextLeftEl) {
+                        nextLeftEl.classList.remove('locked');
+                        nextLeftEl.classList.add('active-target'); // 高亮下一题
+                    }
+                }
+
+                // 检查这一关是不是全答完了
+                if (matchedCount === leftOrderedData.length) {
                     nextLevel();
                 }
             } else {
-                // 配对失败：即时变红并执行摇晃动画
+                // 配对失败：即时变红并剧烈晃动，但不影响当前的作答资格
                 const l = selectedLeft;
                 const r = selectedRight;
                 l.classList.add('wrong');
@@ -328,14 +370,14 @@
                 
                 msgEl.style.color = "#721c24";
                 msgEl.style.backgroundColor = "#f8d7da";
-                msgEl.innerText = "❌ 连错了，再换一个试试看！";
+                msgEl.innerText = "❌ 连错了，请继续为此题尝试其他答案！";
                 
                 setTimeout(() => {
                     l.classList.remove('selected', 'wrong');
                     r.classList.remove('selected', 'wrong');
                 }, 400);
             }
-            // 清空单次选择，方便立刻进行下一次连线
+            // 清理单次连线，准备下一次尝试
             selectedLeft = null;
             selectedRight = null;
         }
@@ -347,7 +389,7 @@
             setTimeout(() => {
                 document.getElementById('msg').style.backgroundColor = "#e2e8f0";
                 document.getElementById('msg').style.color = "#4a5568";
-                document.getElementById('msg').innerText = "🎉 这一关全对！正在加载下一关...";
+                document.getElementById('msg').innerText = "🎉 这一关顺利通过！正在为您解锁下一大关...";
                 setTimeout(() => {
                     loadLevel(currentLevel);
                 }, 1500);
@@ -369,7 +411,7 @@
         const msgEl = document.getElementById('msg');
         msgEl.style.color = "#2b6cb0";
         msgEl.style.backgroundColor = "#ebf8ff";
-        msgEl.innerHTML = `🏆 <b>恭喜通关！测验完成！</b><br>✨ 最终得分：${score} 分<br>⏱️ 总共耗时：<span style="color:#e53e3e; font-size:1.4rem;">${timeElapsed}</span> 秒！`;
+        msgEl.innerHTML = `🏆 <b>恭喜完美通关！</b><br>✨ 最终得分：${score} 分<br>⏱️ 测验总耗时：<span style="color:#e53e3e; font-size:1.4rem;">${timeElapsed}</span> 秒！快把成绩报告给老师吧！`;
     }
 </script>
 
