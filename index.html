@@ -1,91 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>看图识东盟钱币</title>
+    <title>三年级数学：东盟国家钱币辨识 Quiz</title>
     <style>
-        body { font-family: sans-serif; background-color: #f0f0f0; padding: 20px; text-align: center; }
-        .box { background: white; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; border: 2px solid #333; }
-        .info { background: #e0e0e0; padding: 10px; margin: 10px 0; font-weight: bold; }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Microsoft YaHei', sans-serif; 
+            background-color: #f7fafc; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 15px; 
+        }
+        #quiz-card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+            max-width: 550px; 
+            width: 100%; 
+            text-align: center; 
+            border: 3px solid #3182ce; 
+        }
+        .hint-box { 
+            color: #4a5568; 
+            background: #ebf8ff; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            font-size: 0.95rem;
+        }
+        .score-board { 
+            display: flex; 
+            justify-content: space-between; 
+            background: #edf2f7; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            font-weight: bold; 
+        }
         
-        /* 核心特征展示区：替代高风险的图片，100%不会出现空白 */
-        .coin-box { display: none; background: #fff3e0; border: 2px dashed #ff9800; padding: 15px; margin: 15px 0; border-radius: 8px; }
-        .coin-txt { font-size: 24px; color: #d35400; font-weight: bold; margin-bottom: 5px; }
-        .coin-feat { font-size: 16px; color: #555; }
+        /* 100% 稳定的原生图片显示区 */
+        #image-area {
+            display: none;
+            width: 100%;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 5px;
+            background: #fff;
+        }
+        #coin-pic {
+            width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+            display: block;
+            border-radius: 6px;
+        }
         
-        .quiz { display: none; text-align: left; margin-top: 15px; }
-        .q-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333; }
-        .opt-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; font-size: 16px; background: #fff; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; text-align: left; }
-        .opt-btn:hover { background: #eee; }
+        /* 兜底文字提示框（双重保险） */
+        #backup-hint {
+            display: none;
+            margin-top: 8px;
+            padding: 8px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 6px;
+            color: #b76e00;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        #quiz-main { display: none; text-align: left; }
+        .q-title { font-size: 1.1rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; text-align: center; }
+        .options-grid { display: flex; flex-direction: column; gap: 10px; }
         
-        .start-btn { background: #007bff; color: white; padding: 12px 30px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .next-btn { background: #28a745; color: white; padding: 10px 25px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; display: none; margin: 15px auto 0 auto; }
-        #msg { margin: 15px 0; font-size: 18px; font-weight: bold; padding: 10px; border-radius: 5px; text-align: center; }
-    </style>
-</head>
-<body>
-
-<div class="box">
-    <h2>🪙 看特征识东盟钱币大闯关</h2>
-    <p>请仔细观察出现的钱币单位和特征，选出它属于哪一个东盟国家。</p>
-    
-    <button id="start" class="start-btn" onclick="startGame()">开始游戏</button>
-    
-    <div class="info">
-        进度: <span id="cur">0</span> / 10 | 得分: <span id="score">0</span>
-    </div>
-
-    <div id="coin-area" class="coin-box">
-        <div id="c-name" class="coin-txt"></div>
-        <div id="c-feat" class="coin-feat"></div>
-    </div>
-    
-    <div id="quiz-area" class="quiz">
-        <div class="q-title">问题：上面这个钱币特征属于哪一个东盟国家？</div>
-        <button class="opt-btn" onclick="check(this)"></button>
-        <button class="opt-btn" onclick="check(this)"></button>
-        <button class="opt-btn" onclick="check(this)"></button>
-        <button class="opt-btn" onclick="check(this)"></button>
-    </div>
-
-    <div id="msg">点击上方蓝色按钮开始！</div>
-    <button id="next" class="next-btn" onclick="nextQuestion()">下一题 ➡️</button>
-</div>
-
-<script>
-    // 纯文本安全题库
-    const data = [
-        { name: "令吉 (Ringgit)", feat: "🪙 特征：RM 标志，正面有第一任最高元首和国花大红花", options: ["文莱", "泰国", "马来西亚", "老挝"], ans: "马来西亚" },
-        { name: "铢 (Baht)", feat: "🪙 特征：正面有国王肖像，常见面额有 20、50、100", options: ["老挝", "泰国", "柬埔寨", "缅甸"], ans: "泰国" },
-        { name: "比索 (Peso)", feat: "🪙 特征：写着 PILIPINAS，常见面额有 20、50 比索纸币", options: ["菲律宾", "印度尼西亚", "新加坡", "越南"], ans: "菲律宾" },
-        { name: "基普 (Kip)", feat: "🪙 特征：课本第15页标注，常见面额数字非常大（如10000）", options: ["柬埔寨", "老挝", "缅甸", "文莱"], ans: "老挝" },
-        { name: "瑞尔 (Riel)", feat: "🪙 特征：印有柬埔寨著名的吴哥窟（Angkor Wat）标志建筑", options: ["越南", "泰国", "马来西亚", "柬埔寨"], ans: "柬埔寨" },
-        { name: "盾 (Dong)", feat: "🪙 特征：写着 CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM，面额极大", options: ["老挝", "新加坡", "越南", "印度尼西亚"], ans: "越南" },
-        { name: "卢比 (Rupiah)", feat: "🪙 特征：也叫印尼盾，写着 BANK INDONESIA，面额高达10万", options: ["菲律宾", "印度尼西亚", "文莱", "缅甸"], ans: "印度尼西亚" },
-        { name: "元 (Kyat)", feat: "🪙 特征：课本第16页汇率表标注，钱币上常有缅甸神兽/狮子图案", options: ["缅甸", "泰国", "老挝", "柬埔寨"], ans: "缅甸" },
-        { name: "元 (Dollar) - 课本共同名称①", feat: "🪙 特征：与文莱钱币等值，写着 SINGAPORE，有胡先翁或国徽", options: ["马来西亚", "文莱", "新加坡", "越南"], ans: "新加坡" },
-        { name: "元 (Dollar) - 课本共同名称②", feat: "🪙 特征：与新加坡钱币等值，写着 NEGARA BRUNEI DARUSSALAM", options: ["文莱", "菲律宾", "印度尼西亚", "泰国"], ans: "文莱" }
-    ];
-
-    let idx = 0, score = 0, locked = false;
-
-    // 网页防卡死检测
-    window.onerror = function(m) {
-        alert("网页加载发生错误，请联系老师刷新！错误信息: " + m);
-    };
-
-    function startGame() {
-        idx = 0; score = 0; locked = false;
-        document.getElementById('start').style.display = "none";
-        document.getElementById('quiz-area').style.display = "block";
-        document.getElementById('coin-area').style.display = "block";
-        document.getElementById('score').innerText = score;
-        showQuestion();
-    }
-
-    function showQuestion() {
-        locked = false;
-        document.getElementById('next').style.display = "none";
-        document.
+        .opt-btn { 
+            width: 100%; 
+            padding: 14px 18px; 
+            font-size: 1rem; 
+            background: #f8fafc; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            text-align: left; 
+            color: #4a5568; 
+        }
+        .opt-btn:hover:not(:disabled) { background: #edf2f7; }
+        .opt-btn.correct { background: #c6f6d5 !important; border-color: #38a169 !important; color: #22543d !important; font-weight: bold; }
+        .opt-btn.incorrect { background: #fff5f5 !important; border-color: #e53e3e !important; color: #9b2c2c !important; }
         
+        #feedback { margin: 15px 0; font-size: 1.1rem; font-weight: bold; min-height: 40px; padding: 10px; border-radius: 6px; text-align: center; }
+        
+        .control-btn { 
+            display: inline-block; 
+            padding:
