@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>单元四：看图识东盟钱币</title>
+    <title>三年级数学：看图识东盟钱币</title>
     <style>
         * { box-sizing: border-box; }
         body { 
             font-family: 'Microsoft YaHei', sans-serif; 
-            background-color: #f2f6fa; 
+            background-color: #f0f4f8; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -35,6 +35,7 @@
             text-align: left; 
             margin-bottom: 15px; 
             font-size: 0.95rem;
+            line-height: 1.5; 
         }
         .stats-bar { 
             display: flex; 
@@ -46,36 +47,43 @@
             font-weight: bold; 
         }
         
-        /* 核心精细裁剪视窗：只展示当前题目的钱币 */
-        #img-window {
+        /* 100% 稳定卡片式图片区域 */
+        #coin-card {
             display: none;
             width: 100%;
-            height: 190px;
+            padding: 20px;
             margin: 15px 0;
-            border-radius: 12px;
-            border: 3px solid #cbd5e0;
-            background-color: #f8fafc;
-            /* 自动读取同目录下的课本图 */
-            background-image: url('image_9e3141.jpg'); 
-            background-repeat: no-repeat;
-            background-size: 650px auto; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+        .flag-box {
+            width: 100px;
+            height: 60px;
+            margin: 0 auto 15px auto;
+            border: 2px solid white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .coin-title {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+        .coin-sub {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
         }
 
         #quiz-container { display: none; margin: 15px 0; text-align: left; }
-        .question-title { font-size: 1.15rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; }
+        .question-title { font-size: 1.2rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; text-align: center; }
         .options-list { display: flex; flex-direction: column; gap: 10px; }
         
         .option-btn { 
             width: 100%; 
             padding: 14px 20px; 
-            font-size: 1.05rem; 
-            background: #f8fafc; 
-            border: 2px solid #e2e8f0; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            text-align: left; 
-            color: #4a5568; 
-            transition: all 0.1s;
-        }
-        .option-btn:hover:not(:disabled
+            font-size: 1.05
