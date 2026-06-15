@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三年级数学：东盟国家钱币辨识 Quiz</title>
+    <title>三年级数学单元四：看图识东盟钱币</title>
     <style>
         * { box-sizing: border-box; }
         body { 
             font-family: 'Microsoft YaHei', sans-serif; 
-            background-color: #f7fafc; 
+            background-color: #f0f4f8; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -16,87 +16,254 @@
             margin: 0; 
             padding: 15px; 
         }
-        #quiz-card { 
+        #game-box { 
             background: white; 
             padding: 25px; 
-            border-radius: 16px; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             max-width: 550px; 
             width: 100%; 
             text-align: center; 
-            border: 3px solid #3182ce; 
+            border: 4px solid #4a90e2; 
         }
-        .hint-box { 
+        .hint { 
             color: #4a5568; 
             background: #ebf8ff; 
             padding: 12px; 
-            border-radius: 8px; 
+            border-radius: 10px; 
+            border-left: 5px solid #3182ce; 
+            text-align: left; 
             margin-bottom: 15px; 
             font-size: 0.95rem;
+            line-height: 1.5; 
         }
-        .score-board { 
+        .stats-bar { 
             display: flex; 
             justify-content: space-between; 
             background: #edf2f7; 
-            padding: 10px 20px; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
             font-weight: bold; 
         }
         
-        /* 100% 稳定的原生图片显示区 */
-        #image-area {
+        /* 100% 绝对稳定的特色特征卡片（永不空白） */
+        #coin-card {
             display: none;
-            width: 100%;
+            background: linear-gradient(135deg, #6b8dd6, #8e37d7);
+            color: white;
+            padding: 25px 15px;
             margin: 15px 0;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 5px;
-            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
-        #coin-pic {
-            width: 100%;
-            height: auto;
-            max-height: 250px;
-            object-fit: contain;
-            display: block;
-            border-radius: 6px;
-        }
-        
-        /* 兜底文字提示框（双重保险） */
-        #backup-hint {
-            display: none;
-            margin-top: 8px;
-            padding: 8px;
-            background: #fff8e1;
-            border: 1px solid #ffe082;
-            border-radius: 6px;
-            color: #b76e00;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
+        #card-flag { font-size: 50px; margin-bottom: 5px; }
+        #card-coin { font-size: 26px; font-weight: bold; margin-bottom: 8px; }
+        #card-detail { font-size: 16px; opacity: 0.9; line-height: 1.4; }
 
-        #quiz-main { display: none; text-align: left; }
-        .q-title { font-size: 1.1rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; text-align: center; }
-        .options-grid { display: flex; flex-direction: column; gap: 10px; }
+        #quiz-container { display: none; margin: 15px 0; text-align: left; }
+        .question-title { font-size: 1.15rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; text-align: center; }
+        .options-list { display: flex; flex-direction: column; gap: 10px; }
         
-        .opt-btn { 
+        .option-btn { 
             width: 100%; 
-            padding: 14px 18px; 
-            font-size: 1rem; 
+            padding: 14px 20px; 
+            font-size: 1.05rem; 
             background: #f8fafc; 
             border: 2px solid #e2e8f0; 
-            border-radius: 10px; 
+            border-radius: 12px; 
             cursor: pointer; 
             text-align: left; 
             color: #4a5568; 
         }
-        .opt-btn:hover:not(:disabled) { background: #edf2f7; }
-        .opt-btn.correct { background: #c6f6d5 !important; border-color: #38a169 !important; color: #22543d !important; font-weight: bold; }
-        .opt-btn.incorrect { background: #fff5f5 !important; border-color: #e53e3e !important; color: #9b2c2c !important; }
+        .option-btn:hover:not(:disabled) { background: #edf2f7; border-color: #cbd5e0; }
+        .option-btn.correct { background: #c6f6d5 !important; border-color: #38a169 !important; color: #22543d !important; font-weight: bold; }
+        .option-btn.incorrect { background: #fff5f5 !important; border-color: #e53e3e !important; color: #9b2c2c !important; }
         
-        #feedback { margin: 15px 0; font-size: 1.1rem; font-weight: bold; min-height: 40px; padding: 10px; border-radius: 6px; text-align: center; }
-        
-        .control-btn { 
+        #msg { margin: 15px 0; font-size: 1.1rem; font-weight: bold; min-height: 35px; padding: 10px; border-radius: 8px; text-align: center; }
+        .btn { 
             display: inline-block; 
-            padding:
+            padding: 12px 45px; 
+            background: #3182ce; 
+            color: white; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-size: 1.15rem; 
+            font-weight: bold; 
+            box-shadow: 0 5px 15px rgba(49,130,206,0.3); 
+            margin: 10px auto; 
+        }
+        .btn:hover { background: #2b6cb0; }
+    </style>
+</head>
+<body>
+
+<div id="game-box">
+    <h2>🪙 看特征识东盟钱币大闯关</h2>
+    <div id="hint-text" class="hint">同学们，请仔细观察上方出现的钱币标志和国旗图案，选出它属于哪一个东盟国家吧！点击按钮开始。</div>
+    
+    <div>
+        <button id="start-game-btn" class="btn" onclick="triggerStart()">开始游戏</button>
+    </div>
+    
+    <div class="stats-bar">
+        <div>⏱️ 计时: <span id="timer">0</span> 秒</div>
+        <div>📋 进度: <span id="progress">0 / 10</span></div>
+        <div>✨ 得分: <span id="score">0</span></div>
+    </div>
+
+    <div id="coin-card">
+        <div id="card-flag">🇲🇾</div>
+        <div id="card-coin">钱币单位</div>
+        <div id="card-detail">钱币特征描述</div>
+    </div>
+    
+    <div id="quiz-container">
+        <div class="question-title">👇 请问上面代表的是哪一个东盟国家？</div>
+        <div class="options-list">
+            <button class="option-btn" onclick="judgeAnswer(this)"></button>
+            <button class="option-btn" onclick="judgeAnswer(this)"></button>
+            <button class="option-btn" onclick="judgeAnswer(this)"></button>
+            <button class="option-btn" onclick="judgeAnswer(this)"></button>
+        </div>
+    </div>
+
+    <div id="msg">点击上方蓝色按钮启动游戏！</div>
+    
+    <div>
+        <button id="next-q-btn" class="btn" style="display: none;" onclick="goNext()">下一题 ➡️</button>
+    </div>
+</div>
+
+<script>
+    // 零外部文件依赖的纯净无Bug题库
+    const dataset = [
+        { 
+            country: "马来西亚", options: ["文莱", "泰国", "马来西亚", "老挝"], ans: "马来西亚",
+            flag: "🇲🇾", coin: "令吉 (Ringgit)", detail: "💡 钱币提示：带有【RM】标志，印有国花大红花" 
+        },
+        { 
+            country: "泰国", options: ["老挝", "泰国", "柬埔寨", "缅甸"], ans: "泰国",
+            flag: "🇹🇭", coin: "铢 (Baht)", detail: "💡 钱币提示：课本上是绿色外观，印有国王肖像的面额20铢" 
+        },
+        { 
+            country: "菲律宾", options: ["菲律宾", "印度尼西亚", "新加坡", "越南"], ans: "菲律宾",
+            flag: "🇵🇭", coin: "比索 (Peso)", detail: "💡 钱币提示：课本第15页标注，写着 PILIPINAS 字样" 
+        },
+        { 
+            country: "老挝", options: ["柬埔寨", "老挝", "缅甸", "文莱"], ans: "老挝",
+            flag: "🇱🇦", coin: "基普 (Kip)", detail: "💡 钱币提示：课本第15页标注，钱币上的面额数字非常大" 
+        },
+        { 
+            country: "柬埔寨", options: ["越南", "泰国", "马来西亚", "柬埔寨"], ans: "柬埔寨",
+            flag: "🇰🇭", coin: "瑞尔 (Riel)", detail: "💡 钱币提示：钱币上印有柬埔寨著名的【吴哥窟】古建筑标志" 
+        },
+        { 
+            country: "越南", options: ["老挝", "新加坡", "越南", "印度尼西亚"], ans: "越南",
+            flag: "🇻🇳", coin: "盾 (Dong)", detail: "💡 钱币提示：面额数字极大（如500,000），印有胡志明肖像" 
+        },
+        { 
+            country: "印度尼西亚", options: ["菲律宾", "印度尼西亚", "文莱", "缅甸"], ans: "印度尼西亚",
+            flag: "🇮🇩", coin: "卢比 (Rupiah)", detail: "💡 钱币提示：也被称作印尼盾，写着 BANK INDONESIA" 
+        },
+        { 
+            country: "缅甸", options: ["缅甸", "泰国", "老挝", "柬埔寨"], ans: "缅甸",
+            flag: "🇲🇲", coin: "元 (Kyat)", detail: "💡 钱币提示：课本第16页汇率表标注，钱币常有狮子神兽图案" 
+        },
+        { 
+            country: "新加坡", options: ["马来西亚", "文莱", "新加坡", "越南"], ans: "新加坡",
+            flag: "🇸🇬", coin: "元 (Dollar)", detail: "💡 钱币提示：与文莱钱币等值，课本共同名称，写着 SINGAPORE" 
+        },
+        { 
+            country: "文莱", options: ["文莱", "菲律宾", "印度尼西亚", "泰国"], ans: "文莱",
+            flag: "🇧🇳", coin: "元 (Dollar)", detail: "💡 钱币提示：与新加坡钱币等值，课本共同名称，写着 NEGARA BRUNEI" 
+        }
+    ];
+
+    let activeIdx = 0, currentScore = 0, seconds = 0, clockId = null, locked = false;
+
+    function triggerStart() {
+        activeIdx = 0; currentScore = 0; seconds = 0; locked = false;
+        document.getElementById('start-game-btn').style.display = "none";
+        document.getElementById('quiz-container').style.display = "block";
+        document.getElementById('coin-card').style.display = "block";
+        document.getElementById('score').innerText = currentScore;
+        document.getElementById('timer').innerText = seconds;
+        
+        clearInterval(clockId);
+        clockId = setInterval(() => { seconds++; document.getElementById('timer').innerText = seconds; }, 1000);
+
+        renderQuiz();
+    }
+
+    function renderQuiz() {
+        locked = false;
+        document.getElementById('next-q-btn').style.display = "none";
+        printLog("请仔细观察上方的特征卡片，选择正确的国家名称。", "transparent", "#2d3748");
+        document.getElementById('progress').innerText = `${activeIdx + 1} / 10`;
+
+        const targetData = dataset[activeIdx];
+        
+        // 核心安全更新机制
+        document.getElementById('card-flag').innerText = targetData.flag;
+        document.getElementById('card-coin').innerText = targetData.coin;
+        document.getElementById('card-detail').innerText = targetData.detail;
+
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach((b, i) => {
+            b.className = "option-btn";
+            b.innerText = `${String.fromCharCode(65 + i)}. ${targetData.options[i]}`;
+            b.disabled = false;
+        });
+    }
+
+    function judgeAnswer(element) {
+        if (locked) return;
+        locked = true;
+
+        const targetData = dataset[activeIdx];
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach(b => b.disabled = true);
+
+        const userChoice = element.innerText.substring(3); 
+
+        if (userChoice === targetData.ans) {
+            element.classList.add('correct');
+            currentScore += 10;
+            document.getElementById('score').innerText = currentScore;
+            printLog("✅ 回答正确！太棒了！", "#d4edda", "#155724");
+        } else {
+            element.classList.add('incorrect');
+            btns.forEach(b => { 
+                if (b.innerText.substring(3) === targetData.ans) b.classList.add('correct'); 
+            });
+            printLog(`❌ 答错啦！正确答案应该是：<b>${targetData.ans}</b>`, "#fff5f5", "#e53e3e");
+        }
+        document.getElementById('next-q-btn').style.display = "inline-block";
+    }
+
+    function goNext() {
+        activeIdx++;
+        if (activeIdx < dataset.length) { renderQuiz(); } else { finishGame(); }
+    }
+
+    function printLog(t, b, c) {
+        const m = document.getElementById('msg'); m.innerHTML = t; m.style.backgroundColor = b; m.style.color = c;
+    }
+
+    function finishGame() {
+        clearInterval(clockId);
+        document.getElementById('quiz-container').style.display = "none";
+        document.getElementById('coin-card').style.display = "none";
+        document.getElementById('next-q-btn').style.display = "none";
+        const sBtn = document.getElementById('start-game-btn');
+        sBtn.style.display = "inline-block";
+        sBtn.innerText = "重新挑战";
+        let note = currentScore === 100 ? "🥇 满分通关！你完美掌握了所有东盟国家的钱币辨识！" : "👍 挑战完成！可以再试一次争取拿到满分哦！";
+        printLog(`🎉 <b>大功告成！全网通关！</b><br>最终得分：<span style='color:#3182ce; font-size:1.5rem;'>${currentScore}</span> 分<br>总共耗时：<b>${seconds}</b> 秒<br><br>${note}`, "#ebf8ff", "#2b6cb0");
+    }
+</script>
+
+</body>
+</html>
