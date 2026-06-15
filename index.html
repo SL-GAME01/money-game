@@ -67,7 +67,7 @@
             color: #4a5568;
             text-align: left;
         }
-        .option-btn:hover { background: #edf2f7; border-color: #cbd5e0; }
+        .option-btn:hover:not(:disabled) { background: #edf2f7; border-color: #cbd5e0; }
         .option-btn.correct { background: #c6f6d5 !important; border-color: #38a169 !important; color: #22543d !important; font-weight: bold; }
         .option-btn.incorrect { background: #fff5f5 !important; border-color: #e53e3e !important; color: #9b2c2c !important; }
 
@@ -110,4 +110,141 @@
     <div id="quiz-container">
         <div class="question-text" id="question-text">题目加载中...</div>
         <div class="options-list" id="options-box">
-            <button class="option-btn" onclick
+            <button class="option-btn" onclick="checkAnswer(this)"></button>
+            <button class="option-btn" onclick="checkAnswer(this)"></button>
+            <button class="option-btn" onclick="checkAnswer(this)"></button>
+            <button class="option-btn" onclick="checkAnswer(this)"></button>
+        </div>
+    </div>
+
+    <div id="msg">点击上方蓝色按钮启动游戏！</div>
+    
+    <div style="text-align: center;">
+        <button id="next-btn" class="btn" style="display: none;" onclick="nextQuestion()">下一题 ➡️</button>
+    </div>
+</div>
+
+<script>
+    // 题目数据库：完美收录截图中的 10 道题目
+    const quizData = [
+        { q: "在东南亚国家联盟（东盟）中，哪个国家使用的钱币单位是“铢”（Baht）？", options: ["越南", "菲律宾", "老挝"], ans: "泰国" },
+        { q: "新加坡和文莱这两个东盟国家使用的钱币单位名称在课本中共同称为什么？", options: ["卢比", "令吉", "盾"], ans: "元" },
+        { q: "如果你在印度尼西亚（Indonesia）旅游，你最可能使用哪种钱币单位？", options: ["基普", "比索", "瑞尔"], ans: "卢比" },
+        { q: "钱币单位“盾”（Dong）属于以下哪个东盟国家？", options: ["柬埔寨", "文莱", "缅甸"], ans: "越南" },
+        { q: "菲律宾（Philippines）使用的钱币单位名称是？", options: ["令吉", "铢", "瑞尔"], ans: "比索" },
+        { q: "在数学课本第15页中，老挝（Laos）的钱币单位被标注为：", options: ["元", "瑞尔", "卢比"], ans: "基普" },
+        { q: "哪一个国家的钱币单位是“瑞尔”（Riel）？", options: ["菲律宾", "缅甸", "泰国"], ans: "柬埔寨" },
+        { q: "根据课本第16页的汇率表，缅甸（Myanmar）使用的钱币单位名称是？", options: ["铢", "令吉", "盾"], ans: "元" }, 
+        { q: "马来希亚的法定钱币单位名称是？", options: ["铢", "比索", "元"], ans: "令吉" },
+        { q: "关于不同国家的钱币，下列哪项说明符合课本第14页的内容？", options: [
+            "东盟国家只使用纸币，不使用硬币。",
+            "所有东盟国家的钱币单位名称都一样。",
+            "1令吉的币值在任何时候都等于7.91铢。"
+        ], ans: "不同国家的钱币面额可能相同，但不一定等值。" }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let timeElapsed = 0;
+    let timerInterval = null;
+    let shuffledQuiz = [];
+    let hasAnswered = false;
+
+    function startGame() {
+        score = 0;
+        timeElapsed = 0;
+        currentIdx = 0;
+        document.getElementById('action-btn').style.display = "none";
+        document.getElementById('quiz-container').style.display = "block";
+        document.getElementById('score').innerText = score;
+        document.getElementById('timer').innerText = timeElapsed;
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeElapsed++;
+            document.getElementById('timer').innerText = timeElapsed;
+        }, 1000);
+
+        // 打乱题库顺序
+        shuffledQuiz = [...quizData].sort(() => Math.random() - 0.5);
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        hasAnswered = false;
+        document.getElementById('next-btn').style.display = "none";
+        updateMsg("请读题并选择你认为正确的答案选项。", "transparent", "#2d3748");
+        document.getElementById('progress').innerText = `${currentIdx + 1} / 10`;
+
+        const currentQ = shuffledQuiz[currentIdx];
+        document.getElementById('question-text').innerText = `${currentIdx + 1}. ${currentQ.q}`;
+
+        // 核心修复点：将正确答案与错误干扰项合并成一组，再进行安全打乱
+        let allOptions = [currentQ.ans, ...currentQ.options];
+        allOptions.sort(() => Math.random() - 0.5);
+        
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach((btn, i) => {
+            btn.className = "option-btn"; 
+            btn.innerText = allOptions[i];
+            btn.disabled = false;
+        });
+    }
+
+    function checkAnswer(selectedBtn) {
+        if (hasAnswered) return; 
+        hasAnswered = true;
+
+        const currentQ = shuffledQuiz[currentIdx];
+        const buttons = document.querySelectorAll('.option-btn');
+
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedBtn.innerText === currentQ.ans) {
+            selectedBtn.classList.add('correct');
+            score += 10;
+            document.getElementById('score').innerText = score;
+            updateMsg("✅ 回答正确！太棒了！", "#d4edda", "#155724");
+        } else {
+            selectedBtn.classList.add('incorrect');
+            buttons.forEach(btn => {
+                if (btn.innerText === currentQ.ans) {
+                    btn.classList.add('correct');
+                }
+            });
+            updateMsg(`❌ 答错啦！正确答案应该是：<b>${currentQ.ans}</b>`, "#fff5f5", "#e53e3e");
+        }
+
+        document.getElementById('next-btn').style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < shuffledQuiz.length) {
+            loadQuestion();
+        } else {
+            endGame();
+        }
+    }
+
+    function updateMsg(txt, bg, color) {
+        const m = document.getElementById('msg');
+        m.innerHTML = txt; m.style.backgroundColor = bg; m.style.color = color;
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-container').style.display = "none";
+        document.getElementById('next-btn').style.display = "none";
+        
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.style.display = "inline-block";
+        actionBtn.innerText = "重新挑战";
+
+        let comment = score === 100 ? "🥇 满分通关！你完美的掌握了东盟钱币知识！" : "👍 挑战完成！可以再试一次争取拿到满分哦！";
+        updateMsg(`🎉 <b>大功告成！通关成功！</b><br>最终得分：<span style='color:#3182ce; font-size:1.5rem;'>${score}</span> 分<br>总共耗时：<b>${timeElapsed}</b> 秒<br><br>${comment}`, "#ebf8ff", "#2b6cb0");
+    }
+</script>
+
+</body>
+</html>
