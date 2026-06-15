@@ -240,4 +240,10 @@
         actionBtn.style.display = "inline-block";
         actionBtn.innerText = "重新挑战";
 
-        let comment = score === 100 ? "🥇 满分通关！你完美的掌握了东盟钱币知识！" : "👍 挑战完成
+        let comment = score === 100 ? "🥇 满分通关！你完美的掌握了东盟钱币知识！" : "👍 挑战完成！可以再试一次争取拿到满分哦！";
+        updateMsg(`🎉 <b>大功告成！通关成功！</b><br>最终得分：<span style='color:#3182ce; font-size:1.5rem;'>${score}</span> 分<br>总共耗时：<b>${timeElapsed}</b> 秒<br><br>${comment}`, "#ebf8ff", "#2b6cb0");
+    }
+</script>
+
+</body>
+</html>
