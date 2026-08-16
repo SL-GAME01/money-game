@@ -3,267 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三年级数学单元四：看图识东盟钱币</title>
+    <title>三年级数学：时间换算大冒险</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Microsoft YaHei', sans-serif; 
-            background-color: #f0f4f8; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 15px; 
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+SC:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            background-color: #0f172a;
         }
-        #game-box { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            max-width: 550px; 
-            width: 100%; 
-            text-align: center; 
-            border: 4px solid #4a90e2; 
-        }
-        .hint { 
-            color: #4a5568; 
-            background: #ebf8ff; 
-            padding: 12px; 
-            border-radius: 10px; 
-            border-left: 5px solid #3182ce; 
-            text-align: left; 
-            margin-bottom: 15px; 
-            font-size: 0.95rem;
-            line-height: 1.5; 
-        }
-        .stats-bar { 
-            display: flex; 
-            justify-content: space-between; 
-            background: #edf2f7; 
-            padding: 12px 20px; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            font-weight: bold; 
-        }
-        
-        /* 100% 绝对稳定的特色特征卡片（永不空白） */
-        #coin-card {
-            display: none;
-            background: linear-gradient(135deg, #6b8dd6, #8e37d7);
-            color: white;
-            padding: 25px 15px;
-            margin: 15px 0;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-        #card-flag { font-size: 50px; margin-bottom: 5px; }
-        #card-coin { font-size: 26px; font-weight: bold; margin-bottom: 8px; }
-        #card-detail { font-size: 16px; opacity: 0.9; line-height: 1.4; }
-
-        #quiz-container { display: none; margin: 15px 0; text-align: left; }
-        .question-title { font-size: 1.15rem; font-weight: bold; color: #2d3748; margin-bottom: 15px; text-align: center; }
-        .options-list { display: flex; flex-direction: column; gap: 10px; }
-        
-        .option-btn { 
-            width: 100%; 
-            padding: 14px 20px; 
-            font-size: 1.05rem; 
-            background: #f8fafc; 
-            border: 2px solid #e2e8f0; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            text-align: left; 
-            color: #4a5568; 
-        }
-        .option-btn:hover:not(:disabled) { background: #edf2f7; border-color: #cbd5e0; }
-        .option-btn.correct { background: #c6f6d5 !important; border-color: #38a169 !important; color: #22543d !important; font-weight: bold; }
-        .option-btn.incorrect { background: #fff5f5 !important; border-color: #e53e3e !important; color: #9b2c2c !important; }
-        
-        #msg { margin: 15px 0; font-size: 1.1rem; font-weight: bold; min-height: 35px; padding: 10px; border-radius: 8px; text-align: center; }
-        .btn { 
-            display: inline-block; 
-            padding: 12px 45px; 
-            background: #3182ce; 
-            color: white; 
-            border: none; 
-            border-radius: 25px; 
-            cursor: pointer; 
-            font-size: 1.15rem; 
-            font-weight: bold; 
-            box-shadow: 0 5px 15px rgba(49,130,206,0.3); 
-            margin: 10px auto; 
-        }
-        .btn:hover { background: #2b6cb0; }
+        .font-game { font-family: 'Fredoka One', cursive; }
     </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 text-white">
 
-<div id="game-box">
-    <h2>🪙 看特征识东盟钱币大闯关</h2>
-    <div id="hint-text" class="hint">同学们，请仔细观察上方出现的钱币标志和国旗图案，选出它属于哪一个东盟国家吧！点击按钮开始。</div>
-    
-    <div>
-        <button id="start-game-btn" class="btn" onclick="triggerStart()">开始游戏</button>
-    </div>
-    
-    <div class="stats-bar">
-        <div>⏱️ 计时: <span id="timer">0</span> 秒</div>
-        <div>📋 进度: <span id="progress">0 / 10</span></div>
-        <div>✨ 得分: <span id="score">0</span></div>
-    </div>
+    <!-- 主界面容器 -->
+    <div class="relative w-full max-w-4xl bg-slate-800 border-4 border-indigo-500/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        
+        <!-- 顶栏状态 -->
+        <div class="bg-slate-900/90 border-b border-indigo-500/30 p-3 md:p-4 flex justify-between items-center z-10">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 px-3 py-1 rounded-full text-xs md:text-sm font-bold flex items-center gap-2">
+                    <i class="fas fa-layer-group"></i>
+                    <span id="levelText">第一关：基础概念</span>
+                </div>
+                <div class="text-amber-400 text-sm md:text-base font-bold">
+                    <i class="fas fa-star mr-1"></i>得分: <span id="scoreText">0</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="scratchBtn" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-1 shadow-md">
+                    <i class="fas fa-pen"></i> 草稿纸
+                </button>
+                <button id="hintBtn" class="bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-1 shadow-md">
+                    <i class="fas fa-lightbulb"></i> 提示
+                </button>
+            </div>
+        </div>
 
-    <div id="coin-card">
-        <div id="card-flag">🇲🇾</div>
-        <div id="card-coin">钱币单位</div>
-        <div id="card-detail">钱币特征描述</div>
-    </div>
-    
-    <div id="quiz-container">
-        <div class="question-title">👇 请问上面代表的是哪一个东盟国家？</div>
-        <div class="options-list">
-            <button class="option-btn" onclick="judgeAnswer(this)"></button>
-            <button class="option-btn" onclick="judgeAnswer(this)"></button>
-            <button class="option-btn" onclick="judgeAnswer(this)"></button>
-            <button class="option-btn" onclick="judgeAnswer(this)"></button>
+        <!-- Canvas 渲染区域 -->
+        <div class="relative flex-1 bg-slate-900 flex justify-center items-center overflow-hidden">
+            <canvas id="gameCanvas" class="w-full h-full cursor-pointer"></canvas>
+
+            <!-- 草稿纸浮层 -->
+            <div id="scratchpadModal" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md hidden flex-col z-20">
+                <div class="p-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
+                    <span class="font-bold text-emerald-400"><i class="fas fa-paint-brush mr-2"></i>草稿纸 (用手指/鼠标演算)</span>
+                    <div class="flex gap-2">
+                        <button id="clearScratch" class="bg-rose-600 hover:bg-rose-500 px-3 py-1 rounded text-xs">清空</button>
+                        <button id="closeScratch" class="bg-slate-600 hover:bg-slate-500 px-3 py-1 rounded text-xs">关闭</button>
+                    </div>
+                </div>
+                <canvas id="scratchCanvas" class="flex-1 w-full h-full cursor-crosshair"></canvas>
+            </div>
+        </div>
+
+        <!-- 底部题目及选项 -->
+        <div class="bg-slate-900/95 border-t border-indigo-500/30 p-4 z-10 flex flex-col items-center">
+            <div id="questionBox" class="text-lg md:text-2xl font-bold text-center text-cyan-300 mb-4 min-h-[3rem] flex items-center justify-center">
+                加载题目中...
+            </div>
+            
+            <div id="optionsBox" class="grid grid-cols-2 gap-3 md:gap-4 w-full max-w-xl">
+                <!-- 动态生成选项按钮 -->
+            </div>
         </div>
     </div>
 
-    <div id="msg">点击上方蓝色按钮启动游戏！</div>
-    
-    <div>
-        <button id="next-q-btn" class="btn" style="display: none;" onclick="goNext()">下一题 ➡️</button>
+    <!-- 弹窗：提示 / 解题详解 -->
+    <div id="hintModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border-2 border-amber-500 rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <h3 class="text-xl font-bold text-amber-400 mb-3 flex items-center gap-2">
+                <i class="fas fa-lightbulb"></i> 解题小思路
+            </h3>
+            <p id="hintText" class="text-slate-200 text-base leading-relaxed mb-6"></p>
+            <button id="closeHint" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg transition">我明白了</button>
+        </div>
     </div>
-</div>
 
-<script>
-    // 零外部文件依赖的纯净无Bug题库
-    const dataset = [
-        { 
-            country: "马来西亚", options: ["文莱", "泰国", "马来西亚", "老挝"], ans: "马来西亚",
-            flag: "🇲🇾", coin: "令吉 (Ringgit)", detail: "💡 钱币提示：带有【RM】标志，印有国花大红花" 
-        },
-        { 
-            country: "泰国", options: ["老挝", "泰国", "柬埔寨", "缅甸"], ans: "泰国",
-            flag: "🇹🇭", coin: "铢 (Baht)", detail: "💡 钱币提示：课本上是绿色外观，印有国王肖像的面额20铢" 
-        },
-        { 
-            country: "菲律宾", options: ["菲律宾", "印度尼西亚", "新加坡", "越南"], ans: "菲律宾",
-            flag: "🇵🇭", coin: "比索 (Peso)", detail: "💡 钱币提示：课本第15页标注，写着 PILIPINAS 字样" 
-        },
-        { 
-            country: "老挝", options: ["柬埔寨", "老挝", "缅甸", "文莱"], ans: "老挝",
-            flag: "🇱🇦", coin: "基普 (Kip)", detail: "💡 钱币提示：课本第15页标注，钱币上的面额数字非常大" 
-        },
-        { 
-            country: "柬埔寨", options: ["越南", "泰国", "马来西亚", "柬埔寨"], ans: "柬埔寨",
-            flag: "🇰🇭", coin: "瑞尔 (Riel)", detail: "💡 钱币提示：钱币上印有柬埔寨著名的【吴哥窟】古建筑标志" 
-        },
-        { 
-            country: "越南", options: ["老挝", "新加坡", "越南", "印度尼西亚"], ans: "越南",
-            flag: "🇻🇳", coin: "盾 (Dong)", detail: "💡 钱币提示：面额数字极大（如500,000），印有胡志明肖像" 
-        },
-        { 
-            country: "印度尼西亚", options: ["菲律宾", "印度尼西亚", "文莱", "缅甸"], ans: "印度尼西亚",
-            flag: "🇮🇩", coin: "卢比 (Rupiah)", detail: "💡 钱币提示：也被称作印尼盾，写着 BANK INDONESIA" 
-        },
-        { 
-            country: "缅甸", options: ["缅甸", "泰国", "老挝", "柬埔寨"], ans: "缅甸",
-            flag: "🇲🇲", coin: "元 (Kyat)", detail: "💡 钱币提示：课本第16页汇率表标注，钱币常有狮子神兽图案" 
-        },
-        { 
-            country: "新加坡", options: ["马来西亚", "文莱", "新加坡", "越南"], ans: "新加坡",
-            flag: "🇸🇬", coin: "元 (Dollar)", detail: "💡 钱币提示：与文莱钱币等值，课本共同名称，写着 SINGAPORE" 
-        },
-        { 
-            country: "文莱", options: ["文莱", "菲律宾", "印度尼西亚", "泰国"], ans: "文莱",
-            flag: "🇧🇳", coin: "元 (Dollar)", detail: "💡 钱币提示：与新加坡钱币等值，课本共同名称，写着 NEGARA BRUNEI" 
+    <!-- 弹窗：关卡结算 -->
+    <div id="winModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border-2 border-indigo-500 rounded-2xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl">
+            <div class="text-5xl text-yellow-400 mb-3 animate-bounce"><i class="fas fa-trophy"></i></div>
+            <h2 id="winTitle" class="text-2xl md:text-3xl font-extrabold text-white mb-2">第一关挑战成功！</h2>
+            <p id="winDesc" class="text-slate-300 mb-6">你掌握了基本的时间单位换算！接下来准备好挑战进阶的双向换算了吗？</p>
+            <button id="nextLevelBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition transform active:scale-95">
+                进入下一关
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏题库数据（精确对应图片题目）
+        const questionBank = {
+            level1: [
+                { num: "图1-①", q: "基础换算：1 年 = ( ? ) 个月", opts: ["10 个月", "12 个月", "24 个月", "36 个月"], ans: 1, hint: "提示：一年有 12 个月哦！" },
+                { num: "图1-②", q: "基础换算：1 个星期 = ( ? ) 天", opts: ["5 天", "6 天", "7 天", "30 天"], ans: 2, hint: "提示：从星期一到星期日，一共是 7 天。" },
+                { num: "图1-③", q: "基础换算：1 天 = ( ? ) 小时", opts: ["12 小时", "24 小时", "60 小时", "48 小时"], ans: 1, hint: "提示：一天一夜包含 24 小时。" },
+                { num: "图1-④", q: "基础换算：1 小时 = ( ? ) 分钟", opts: ["24 分钟", "30 分钟", "60 分钟", "100 分钟"], ans: 2, hint: "提示：分针走一圈是 60 分钟，也就是 1 小时。" },
+                { num: "图1-⑤", q: "4 小时 = ( ? ) 分钟", opts: ["100 分钟", "240 分钟", "180 分钟", "300 分钟"], ans: 1, hint: "计算：4 × 60 = 240 分钟" },
+                { num: "图1-⑥", q: "2 天 = ( ? ) 小时", opts: ["24 小时", "36 小时", "48 小时", "60 小时"], ans: 2, hint: "计算：2 × 24 = 48 小时" },
+                { num: "图1-⑦", q: "24 个月 = ( ? ) 年", opts: ["1 年", "2 年", "3 年", "4 年"], ans: 1, hint: "计算：24 ÷ 12 = 2 年" },
+                { num: "图1-⑧", q: "3 个星期 = ( ? ) 天", opts: ["14 天", "21 天", "28 天", "30 天"], ans: 1, hint: "计算：3 × 7 = 21 天" }
+            ],
+            level2: [
+                { num: "图2-1", q: "120 分钟 = ( ? ) 小时", opts: ["1 小时", "2 小时", "3 小时", "20 小时"], ans: 1, hint: "计算：120 ÷ 60 = 2 小时" },
+                { num: "图2-1", q: "4 小时 = ( ? ) 分钟", opts: ["120 分钟", "180 分钟", "240 分钟", "300 分钟"], ans: 2, hint: "计算：4 × 60 = 240 分钟" },
+                { num: "图2-2", q: "6 分钟 = ( ? ) 秒", opts: ["360 秒", "420 秒", "300 秒", "600 秒"], ans: 0, hint: "计算：6 × 60 = 360 秒" },
+                { num: "图2-2", q: "420 秒 = ( ? ) 分钟", opts: ["6 分钟", "7 分钟", "8 分钟", "9 分钟"], ans: 1, hint: "计算：420 ÷ 60 = 7 分钟" },
+                { num: "图1-⑨", q: "1 小时 30 分钟 = ( ? ) 分钟", opts: ["60 分钟", "90 分钟", "100 分钟", "130 分钟"], ans: 1, hint: "计算：60 分钟 + 30 分钟 = 90 分钟" },
+                { num: "图2-3", q: "1 小时 5 分钟 = ( ? ) 分钟", opts: ["65 分钟", "95 分钟", "105 分钟", "150 分钟"], ans: 0, hint: "计算：60 分钟 + 5 分钟 = 65 分钟" },
+                { num: "图2-3", q: "95 分钟 = ( ? ) 小时 ( ? ) 分钟", opts: ["1小时15分", "1小时25分", "1小时35分", "1小时45分"], ans: 2, hint: "计算：95 - 60 = 35，即 1 小时 35 分钟" },
+                { num: "图1-⑩", q: "200 秒 = ( ? ) 分钟 ( ? ) 秒", opts: ["2分20秒", "3分20秒", "3分40秒", "4分00秒"], ans: 1, hint: "计算：200 ÷ 60 = 3 余 20，即 3 分钟 20 秒" },
+                { num: "图2-4", q: "335 秒 = ( ? ) 分钟 ( ? ) 秒", opts: ["5分25秒", "5分35秒", "6分15秒", "5分15秒"], ans: 1, hint: "计算：335 ÷ 60 = 5 余 35，即 5 分钟 35 秒" },
+                { num: "图2-4", q: "8 分钟 12 秒 = ( ? ) 秒", opts: ["480 秒", "492 秒", "500 秒", "512 秒"], ans: 1, hint: "计算：(8 × 60) + 12 = 480 + 12 = 492 秒" }
+            ]
+        };
+
+        let currentLevelKey = "level1";
+        let currentQuestionIdx = 0;
+        let score = 0;
+        let particles = [];
+
+        // Canvas 初始化
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scratchCanvas = document.getElementById('scratchCanvas');
+        const scratchCtx = scratchCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
+            scratchCanvas.width = rect.width;
+            scratchCanvas.height = rect.height;
         }
-    ];
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 100);
 
-    let activeIdx = 0, currentScore = 0, seconds = 0, clockId = null, locked = false;
+        // UI 元素
+        const questionBox = document.getElementById('questionBox');
+        const optionsBox = document.getElementById('optionsBox');
+        const scoreText = document.getElementById('scoreText');
+        const levelText = document.getElementById('levelText');
+        const hintModal = document.getElementById('hintModal');
+        const hintText = document.getElementById('hintText');
 
-    function triggerStart() {
-        activeIdx = 0; currentScore = 0; seconds = 0; locked = false;
-        document.getElementById('start-game-btn').style.display = "none";
-        document.getElementById('quiz-container').style.display = "block";
-        document.getElementById('coin-card').style.display = "block";
-        document.getElementById('score').innerText = currentScore;
-        document.getElementById('timer').innerText = seconds;
-        
-        clearInterval(clockId);
-        clockId = setInterval(() => { seconds++; document.getElementById('timer').innerText = seconds; }, 1000);
+        // 初始化题目
+        function loadQuestion() {
+            const qList = questionBank[currentLevelKey];
+            const safeIdx = Math.min(currentQuestionIdx, qList.length - 1);
+            const qData = qList[safeIdx];
 
-        renderQuiz();
-    }
+            questionBox.innerHTML = `<span class="bg-indigo-900/60 text-indigo-300 text-xs px-2 py-1 rounded mr-2">${qData.num}</span> ${qData.q}`;
+            optionsBox.innerHTML = '';
 
-    function renderQuiz() {
-        locked = false;
-        document.getElementById('next-q-btn').style.display = "none";
-        printLog("请仔细观察上方的特征卡片，选择正确的国家名称。", "transparent", "#2d3748");
-        document.getElementById('progress').innerText = `${activeIdx + 1} / 10`;
-
-        const targetData = dataset[activeIdx];
-        
-        // 核心安全更新机制
-        document.getElementById('card-flag').innerText = targetData.flag;
-        document.getElementById('card-coin').innerText = targetData.coin;
-        document.getElementById('card-detail').innerText = targetData.detail;
-
-        const btns = document.querySelectorAll('.option-btn');
-        btns.forEach((b, i) => {
-            b.className = "option-btn";
-            b.innerText = `${String.fromCharCode(65 + i)}. ${targetData.options[i]}`;
-            b.disabled = false;
-        });
-    }
-
-    function judgeAnswer(element) {
-        if (locked) return;
-        locked = true;
-
-        const targetData = dataset[activeIdx];
-        const btns = document.querySelectorAll('.option-btn');
-        btns.forEach(b => b.disabled = true);
-
-        const userChoice = element.innerText.substring(3); 
-
-        if (userChoice === targetData.ans) {
-            element.classList.add('correct');
-            currentScore += 10;
-            document.getElementById('score').innerText = currentScore;
-            printLog("✅ 回答正确！太棒了！", "#d4edda", "#155724");
-        } else {
-            element.classList.add('incorrect');
-            btns.forEach(b => { 
-                if (b.innerText.substring(3) === targetData.ans) b.classList.add('correct'); 
+            qData.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-slate-700/80 hover:bg-indigo-600/80 border border-slate-600 hover:border-indigo-400 py-3 px-4 rounded-xl text-base md:text-lg font-bold text-white shadow-md transition transform active:scale-95 text-center flex items-center justify-center";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx);
+                optionsBox.appendChild(btn);
             });
-            printLog(`❌ 答错啦！正确答案应该是：<b>${targetData.ans}</b>`, "#fff5f5", "#e53e3e");
         }
-        document.getElementById('next-q-btn').style.display = "inline-block";
-    }
 
-    function goNext() {
-        activeIdx++;
-        if (activeIdx < dataset.length) { renderQuiz(); } else { finishGame(); }
-    }
+        // 检查答案
+        function checkAnswer(selectedIdx) {
+            const qList = questionBank[currentLevelKey];
+            const qData = qList[currentQuestionIdx];
 
-    function printLog(t, b, c) {
-        const m = document.getElementById('msg'); m.innerHTML = t; m.style.backgroundColor = b; m.style.color = c;
-    }
+            if (selectedIdx === qData.ans) {
+                // 答对
+                score += 10;
+                scoreText.innerText = score;
+                createParticles(canvas.width / 2, canvas.height / 2);
+                
+                currentQuestionIdx++;
+                if (currentQuestionIdx >= qList.length) {
+                    showWinModal();
+                } else {
+                    loadQuestion();
+                }
+            } else {
+                // 答错震动效果
+                questionBox.classList.add('animate-bounce');
+                setTimeout(() => questionBox.classList.remove('animate-bounce'), 500);
+                showHint();
+            }
+        }
 
-    function finishGame() {
-        clearInterval(clockId);
-        document.getElementById('quiz-container').style.display = "none";
-        document.getElementById('coin-card').style.display = "none";
-        document.getElementById('next-q-btn').style.display = "none";
-        const sBtn = document.getElementById('start-game-btn');
-        sBtn.style.display = "inline-block";
-        sBtn.innerText = "重新挑战";
-        let note = currentScore === 100 ? "🥇 满分通关！你完美掌握了所有东盟国家的钱币辨识！" : "👍 挑战完成！可以再试一次争取拿到满分哦！";
-        printLog(`🎉 <b>大功告成！全网通关！</b><br>最终得分：<span style='color:#3182ce; font-size:1.5rem;'>${currentScore}</span> 分<br>总共耗时：<b>${seconds}</b> 秒<br><br>${note}`, "#ebf8ff", "#2b6cb0");
-    }
-</script>
+        // 提示弹窗
+        document.getElementById('hintBtn').onclick = showHint;
+        function showHint() {
+            const qList = questionBank[currentLevelKey];
+            const safeIdx = Math.min(currentQuestionIdx, qList.length - 1);
+            hintText.innerText = qList[safeIdx].hint;
+            hintModal.classList.remove('hidden');
+        }
+        document.getElementById('closeHint').onclick = () => hintModal.classList.add('hidden');
 
+        // 通关弹窗
+        function showWinModal() {
+            const winModal = document.getElementById('winModal');
+            const winTitle = document.getElementById('winTitle');
+            const winDesc = document.getElementById('winDesc');
+            const nextBtn = document.getElementById('nextLevelBtn');
+
+            if (currentLevelKey === 'level1') {
+                winTitle.innerText = "🎉 第一关挑战成功！";
+                winDesc.innerText = "太棒了！你已经熟练掌握了基本时间单位。现在准备好挑战第二关的【单位混合换算】了吗？";
+                nextBtn.innerText = "进入第二关 (挑战关)";
+                nextBtn.onclick = () => {
+                    currentLevelKey = 'level2';
+                    currentQuestionIdx = 0;
+                    levelText.innerText = "第二关：混合换算";
+                    winModal.classList.add('hidden');
+                    loadQuestion();
+                };
+            } else {
+                winTitle.innerText = "🏆 恭喜获得【时间大师】称号！";
+                winDesc.innerText = `太厉害了！你通关了所有练习，总得分：${score} 分！快把链接分享给其他同学一起挑战吧！`;
+                nextBtn.innerText = "重新挑战";
+                nextBtn.onclick = () => {
+                    currentLevelKey = 'level1';
+                    currentQuestionIdx = 0;
+                    score = 0;
+                    scoreText.innerText = score;
+                    levelText.innerText = "第一关：基础概念";
+                    winModal.classList.add('hidden');
+                    loadQuestion();
+                };
+            }
+            winModal.classList.remove('hidden');
+        }
+
+        // Canvas 背景粒子动画
+        function createParticles(x, y) {
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+                    size: Math.random() * 6 + 2,
+                    alpha: 1
+                });
+            }
+        }
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制居中的时钟图形背景
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) * 0.25;
+
+            ctx.save();
+            ctx.strokeStyle = "rgba(99, 102, 241, 0.15)";
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 绘制表针
+            const now = Date.now() * 0.001;
+            ctx.strokeStyle = "rgba(129, 140, 248, 0.3)";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + Math.cos(now) * (radius * 0.6), centerY + Math.sin(now) * (radius * 0.6));
+            ctx.stroke();
+
+            ctx.restore();
+
+            // 更新并渲染粒子
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            requestAnimationFrame(drawBackground);
+        }
+
+        // 草稿纸功能
+        const scratchModal = document.getElementById('scratchpadModal');
+        let isDrawing = false;
+
+        document.getElementById('scratchBtn').onclick = () => scratchModal.classList.remove('hidden');
+        document.getElementById('closeScratch').onclick = () => scratchModal.classList.add('hidden');
+        document.getElementById('clearScratch').onclick = () => {
+            scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+        };
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+        function stopDrawing() {
+            isDrawing = false;
+            scratchCtx.beginPath();
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = scratchCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            scratchCtx.lineWidth = 3;
+            scratchCtx.lineCap = 'round';
+            scratchCtx.strokeStyle = '#34d399';
+
+            scratchCtx.lineTo(clientX - rect.left, clientY - rect.top);
+            scratchCtx.stroke();
+            scratchCtx.beginPath();
+            scratchCtx.moveTo(clientX - rect.left, clientY - rect.top);
+        }
+
+        scratchCanvas.addEventListener('mousedown', startDrawing);
+        scratchCanvas.addEventListener('mouseup', stopDrawing);
+        scratchCanvas.addEventListener('mousemove', draw);
+
+        scratchCanvas.addEventListener('touchstart', startDrawing);
+        scratchCanvas.addEventListener('touchend', stopDrawing);
+        scratchCanvas.addEventListener('touchmove', draw);
+
+        // 启动游戏
+        loadQuestion();
+        drawBackground();
+    </script>
 </body>
 </html>
