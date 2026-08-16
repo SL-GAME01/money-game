@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>三年级时间单位换算大冒险</title>
+    <title>三年级时间单位换算大冒险 (带音效版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -64,6 +64,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <button id="soundToggleBtn" class="bg-purple-400 hover:bg-purple-500 text-purple-950 px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-1 shadow-md active:scale-95">
+                    <i class="fas fa-volume-up" id="soundIcon"></i> 音效
+                </button>
                 <button id="scratchBtn" class="bg-emerald-400 hover:bg-emerald-500 text-emerald-950 px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold transition flex items-center gap-1 shadow-md active:scale-95">
                     <i class="fas fa-pen-fancy"></i> 草稿纸
                 </button>
@@ -117,9 +120,105 @@
     </div>
 
     <script>
-        // 两张照片中的完整 14 道题目数据
+        // Web Audio API 声音合成器 (内置，无依赖)
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // 音效触发器
+        const Sound = {
+            correct() {
+                if (!soundEnabled) return;
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, now); // C5
+                osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                gain1.gain.setValueAtTime(0.3, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.25);
+
+                setTimeout(() => {
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(783.99, now + 0.12); // G5
+                    osc2.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25); // C6
+                    gain2.gain.setValueAtTime(0.3, now + 0.12);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start(now + 0.12);
+                    osc2.stop(now + 0.35);
+                }, 100);
+            },
+
+            wrong() {
+                if (!soundEnabled) return;
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            },
+
+            win() {
+                if (!soundEnabled) return;
+                const ctx = getAudioContext();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const now = ctx.currentTime + idx * 0.1;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                });
+            }
+        };
+
+        // 音效开关
+        document.getElementById('soundToggleBtn').onclick = () => {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+        };
+
+        // 完整题目数据
         const gameData = {
-            // 第一关：拖拽题 (简单，包含图1的填空和图2的基础换算)
             level1: [
                 { id: "l1_1", prompt: "1 年 =", ans: "12 个月", hint: "基础：1 年 = 12 个月" },
                 { id: "l1_2", prompt: "1 个星期 =", ans: "7 天", hint: "基础：1 个星期 = 7 天" },
@@ -130,7 +229,6 @@
                 { id: "l1_7", prompt: "24 个月 =", ans: "2 年", hint: "计算：24 ÷ 12 = 2 年" },
                 { id: "l1_8", prompt: "3 个星期 =", ans: "21 天", hint: "计算：3 × 7 = 21 天" }
             ],
-            // 第二关：选择题 (较难，包含图2的计算与进阶双向换算)
             level2: [
                 { id: "l2_1", prompt: "图二 ①：120 分钟等于多少小时？", opts: ["1 小时", "2 小时", "3 小时", "4 小时"], ans: 1, hint: "计算：120 ÷ 60 = 2 小时" },
                 { id: "l2_2", prompt: "图二 ②：6 分钟等于多少秒？", opts: ["300 秒", "360 秒", "420 秒", "480 秒"], ans: 1, hint: "计算：6 × 60 = 360 秒" },
@@ -154,7 +252,6 @@
         const levelText = document.getElementById('levelText');
         const scoreText = document.getElementById('scoreText');
 
-        // 初始化关卡
         function initLevel(levelKey) {
             currentLevel = levelKey;
             matchedCount = 0;
@@ -169,7 +266,6 @@
             }
         }
 
-        // --- 第一关：拖拽渲染与逻辑 ---
         function renderLevel1() {
             gameContent.innerHTML = `
                 <div class="text-center mb-2">
@@ -213,6 +309,7 @@
         function bindDragEvents(card) {
             const onStart = (e) => {
                 if (card.dataset.matched === "true") return;
+                getAudioContext();
                 activeDragCard = card;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -265,6 +362,7 @@
 
             if (droppedTarget && droppedTarget.dataset.ans === activeDragCard.dataset.val) {
                 // 配对成功
+                Sound.correct();
                 activeDragCard.dataset.matched = "true";
                 activeDragCard.classList.remove('dragging');
                 activeDragCard.style.position = 'static';
@@ -284,7 +382,8 @@
                     setTimeout(showWinModal, 500);
                 }
             } else {
-                // 放回原位
+                // 错误回弹
+                Sound.wrong();
                 activeDragCard.classList.remove('dragging');
                 activeDragCard.style.position = 'static';
                 activeDragCard.style.width = 'auto';
@@ -293,7 +392,6 @@
             activeDragCard = null;
         }
 
-        // --- 第二关：选择题渲染与逻辑 ---
         function renderLevel2Question() {
             const qData = gameData.level2[currentChoiceIdx];
             gameContent.innerHTML = `
@@ -319,6 +417,7 @@
         function checkChoiceAnswer(selectedIdx) {
             const qData = gameData.level2[currentChoiceIdx];
             if (selectedIdx === qData.ans) {
+                Sound.correct();
                 score += 15;
                 scoreText.innerText = score;
                 currentChoiceIdx++;
@@ -328,12 +427,13 @@
                     renderLevel2Question();
                 }
             } else {
+                Sound.wrong();
                 alert("答错了哦，可以点击右上角【提示】看看解题思路！");
             }
         }
 
-        // 结算弹窗
         function showWinModal() {
+            Sound.win();
             const winModal = document.getElementById('winModal');
             const winTitle = document.getElementById('winTitle');
             const winDesc = document.getElementById('winDesc');
@@ -361,7 +461,6 @@
             winModal.classList.remove('hidden');
         }
 
-        // 提示弹窗
         document.getElementById('hintBtn').onclick = () => {
             const hintText = document.getElementById('hintText');
             if (currentLevel === 'level1') {
@@ -376,9 +475,7 @@
             document.getElementById('hintModal').classList.add('hidden');
         };
 
-        // Canvas 简易星光背景
         const canvas = document.getElementById('bgCanvas');
-        const ctx = canvas.getContext('2d');
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
@@ -386,7 +483,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // 草稿纸功能
         const scratchModal = document.getElementById('scratchpadModal');
         const scratchCanvas = document.getElementById('scratchCanvas');
         const scratchCtx = scratchCanvas.getContext('2d');
@@ -423,7 +519,6 @@
         scratchCanvas.addEventListener('touchend', () => { isDrawing = false; scratchCtx.beginPath(); });
         scratchCanvas.addEventListener('touchmove', draw);
 
-        // 启动第一关
         initLevel('level1');
     </script>
 </body>
