@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>时空萌宠大冒险 - 三年级时间单位换算</title>
+    <title>三年级时间单位换算大冒险</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
             transition: all 0.2s ease;
         }
         .drop-target.drag-over {
-            transform: scale(1.05);
+            transform: scale(1.03);
             border-color: #f59e0b !important;
             background-color: #fef3c7 !important;
         }
@@ -31,36 +31,32 @@
             cursor: grab;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
-        .drag-card:active {
-            cursor: grabbing;
-        }
+        .drag-card:active { cursor: grabbing; }
         .drag-card.dragging {
-            opacity: 0.8;
-            transform: scale(1.1) rotate(3deg);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            opacity: 0.85;
+            transform: scale(1.08) rotate(2deg);
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.2);
             z-index: 50;
         }
 
         @keyframes bounce-short {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            50% { transform: translateY(-6px); }
         }
-        .animate-bounce-short {
-            animation: bounce-short 0.4s ease-in-out;
-        }
+        .animate-bounce-short { animation: bounce-short 0.4s ease-in-out; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 text-slate-800 select-none">
 
     <!-- 主面板 -->
-    <div class="relative w-full max-w-4xl bg-white/90 backdrop-blur-md border-4 border-amber-300 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[620px]">
+    <div class="relative w-full max-w-4xl bg-white/95 backdrop-blur-md border-4 border-amber-300 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[620px]">
         
         <!-- 顶部信息栏 -->
-        <div class="bg-amber-100/80 border-b-2 border-amber-200 p-3 md:p-4 flex justify-between items-center z-10">
+        <div class="bg-amber-100/90 border-b-2 border-amber-200 p-3 md:p-4 flex justify-between items-center z-10">
             <div class="flex items-center space-x-3">
                 <div class="bg-amber-400 text-amber-950 px-3 py-1.5 rounded-2xl text-xs md:text-sm font-black flex items-center gap-2 shadow-sm">
                     <i class="fas fa-paw"></i>
-                    <span id="levelText">第一关：萌宠初体验</span>
+                    <span id="levelText">第一关：拖拽配对 (简单)</span>
                 </div>
                 <div class="text-rose-500 font-game text-base md:text-lg flex items-center gap-1">
                     <i class="fas fa-star text-amber-400"></i>
@@ -80,32 +76,15 @@
         <!-- Canvas 背景特效层 -->
         <canvas id="bgCanvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
 
-        <!-- 拖拽游戏核心区域 -->
-        <div class="relative flex-1 p-4 md:p-6 flex flex-col justify-between z-10">
-            
-            <!-- 引导语 -->
-            <div class="text-center mb-2">
-                <p class="text-slate-600 font-bold text-sm md:text-base">拖动底部的【粉色糖果卡片】放进正确的【蓝色算式框】里吧！</p>
-            </div>
-
-            <!-- 拖放目标区 (配对框) -->
-            <div id="targetContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 my-auto">
-                <!-- 动态生成配对框 -->
-            </div>
-
-            <!-- 可拖拽卡片池 -->
-            <div class="mt-4 pt-3 border-t-2 border-dashed border-amber-200">
-                <div class="text-xs font-bold text-amber-600 mb-2 text-center"><i class="fas fa-hand-pointer mr-1"></i>按住拖动卡片：</div>
-                <div id="sourceContainer" class="flex flex-wrap justify-center gap-2 md:gap-3 min-h-[60px]">
-                    <!-- 动态生成待拖拽卡片 -->
-                </div>
-            </div>
+        <!-- 游戏区域 -->
+        <div id="gameContent" class="relative flex-1 p-3 md:p-6 flex flex-col justify-between z-10 overflow-y-auto">
+            <!-- 动态生成关卡内容 -->
         </div>
 
         <!-- 内置草稿纸浮层 -->
         <div id="scratchpadModal" class="absolute inset-0 bg-white/95 backdrop-blur-md hidden flex-col z-30">
             <div class="p-3 bg-emerald-100 border-b border-emerald-200 flex justify-between items-center">
-                <span class="font-bold text-emerald-800"><i class="fas fa-paint-brush mr-2"></i>可爱草稿纸 (任意演算)</span>
+                <span class="font-bold text-emerald-800"><i class="fas fa-paint-brush mr-2"></i>草稿纸 (用手指/鼠标演算)</span>
                 <div class="flex gap-2">
                     <button id="clearScratch" class="bg-rose-400 hover:bg-rose-500 text-white px-3 py-1 rounded-lg text-xs font-bold">清空</button>
                     <button id="closeScratch" class="bg-slate-400 hover:bg-slate-500 text-white px-3 py-1 rounded-lg text-xs font-bold">关闭</button>
@@ -119,9 +98,9 @@
     <div id="hintModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white border-4 border-sky-300 rounded-3xl p-6 max-w-md w-full shadow-2xl text-center">
             <div class="text-4xl text-sky-400 mb-2"><i class="fas fa-lightbulb"></i></div>
-            <h3 class="text-xl font-black text-slate-800 mb-2">换算小解题思路</h3>
-            <p id="hintText" class="text-slate-600 text-sm md:text-base leading-relaxed mb-6 bg-sky-50 p-4 rounded-2xl border border-sky-100"></p>
-            <button id="closeHint" class="w-full bg-sky-400 hover:bg-sky-500 text-white font-black py-3 rounded-2xl shadow-lg transition active:scale-95">我懂啦！</button>
+            <h3 class="text-xl font-black text-slate-800 mb-2">解题小思路</h3>
+            <div id="hintText" class="text-slate-600 text-sm md:text-base leading-relaxed mb-6 bg-sky-50 p-4 rounded-2xl border border-sky-100 max-h-60 overflow-y-auto text-left"></div>
+            <button id="closeHint" class="w-full bg-sky-400 hover:bg-sky-500 text-white font-black py-3 rounded-2xl shadow-lg transition active:scale-95">我明白了</button>
         </div>
     </div>
 
@@ -130,39 +109,48 @@
         <div class="bg-white border-4 border-amber-400 rounded-3xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl">
             <div class="text-6xl text-amber-400 mb-3 animate-bounce"><i class="fas fa-trophy"></i></div>
             <h2 id="winTitle" class="text-2xl md:text-3xl font-black text-slate-800 mb-2">🎉 第一关顺利通关！</h2>
-            <p id="winDesc" class="text-slate-600 text-sm md:text-base mb-6">你太棒啦！基础换算完全难不倒你，准备好挑战更刺激的进阶换算了吗？</p>
+            <p id="winDesc" class="text-slate-600 text-sm md:text-base mb-6">你真棒！基础题目全部完成，接下来准备好挑战第二关的选择题了吗？</p>
             <button id="nextLevelBtn" class="w-full bg-gradient-to-r from-amber-400 to-rose-400 hover:from-amber-500 hover:to-rose-500 text-white font-black py-3.5 rounded-2xl shadow-lg transition transform active:scale-95 text-lg">
-                开启下一关卡
+                进入第二关 (选择题)
             </button>
         </div>
     </div>
 
     <script>
-        // 游戏题库数据（源自图片题目，改编为拖拽对）
+        // 两张照片中的完整 14 道题目数据
         const gameData = {
+            // 第一关：拖拽题 (简单，包含图1的填空和图2的基础换算)
             level1: [
-                { id: "q1", prompt: "1 年 =", targetAns: "12 个月", hint: "基础知识：1 年包含 12 个月哦！" },
-                { id: "q2", prompt: "1 个星期 =", targetAns: "7 天", hint: "基础知识：从星期一到星期日共 7 天。" },
-                { id: "q3", prompt: "1 天 =", targetAns: "24 小时", hint: "基础知识：一天一夜一共有 24 小时。" },
-                { id: "q4", prompt: "4 小时 =", targetAns: "240 分钟", hint: "计算：4 × 60 = 240 分钟。" }
+                { id: "l1_1", prompt: "1 年 =", ans: "12 个月", hint: "基础：1 年 = 12 个月" },
+                { id: "l1_2", prompt: "1 个星期 =", ans: "7 天", hint: "基础：1 个星期 = 7 天" },
+                { id: "l1_3", prompt: "1 天 =", ans: "24 小时", hint: "基础：1 天 = 24 小时" },
+                { id: "l1_4", prompt: "1 小时 =", ans: "60 分钟", hint: "基础：1 小时 = 60 分钟" },
+                { id: "l1_5", prompt: "4 小时 =", ans: "240 分钟", hint: "计算：4 × 60 = 240 分钟" },
+                { id: "l1_6", prompt: "2 天 =", ans: "48 小时", hint: "计算：2 × 24 = 48 小时" },
+                { id: "l1_7", prompt: "24 个月 =", ans: "2 年", hint: "计算：24 ÷ 12 = 2 年" },
+                { id: "l1_8", prompt: "3 个星期 =", ans: "21 天", hint: "计算：3 × 7 = 21 天" }
             ],
+            // 第二关：选择题 (较难，包含图2的计算与进阶双向换算)
             level2: [
-                { id: "q5", prompt: "120 分钟 =", targetAns: "2 小时", hint: "计算：120 ÷ 60 = 2 小时。" },
-                { id: "q6", prompt: "6 分钟 =", targetAns: "360 秒", hint: "计算：6 × 60 = 360 秒。" },
-                { id: "q7", prompt: "1 小时 5 分钟 =", targetAns: "65 分钟", hint: "计算：60 分钟 + 5 分钟 = 65 分钟。" },
-                { id: "q8", prompt: "200 秒 =", targetAns: "3 分 20 秒", hint: "计算：200 ÷ 60 = 3 分钟 余 20 秒。" }
+                { id: "l2_1", prompt: "图二 ①：120 分钟等于多少小时？", opts: ["1 小时", "2 小时", "3 小时", "4 小时"], ans: 1, hint: "计算：120 ÷ 60 = 2 小时" },
+                { id: "l2_2", prompt: "图二 ②：6 分钟等于多少秒？", opts: ["300 秒", "360 秒", "420 秒", "480 秒"], ans: 1, hint: "计算：6 × 60 = 360 秒" },
+                { id: "l2_3", prompt: "图二 ②：420 秒等于多少分钟？", opts: ["5 分钟", "6 分钟", "7 分钟", "8 分钟"], ans: 2, hint: "计算：420 ÷ 60 = 7 分钟" },
+                { id: "l2_4", prompt: "图一 ⑨：1 小时 30 分钟等于多少分钟？", opts: ["60 分钟", "80 分钟", "90 分钟", "100 分钟"], ans: 2, hint: "计算：60 + 30 = 90 分钟" },
+                { id: "l2_5", prompt: "图二 ③：95 分钟等于几小时几分钟？", opts: ["1小时15分", "1小时25分", "1小时35分", "1小时45分"], ans: 2, hint: "计算：95 - 60 = 35，即 1小时35分" },
+                { id: "l2_6", prompt: "图一 ⑩：200 秒等于几分钟几秒？", opts: ["2分20秒", "3分20秒", "3分40秒", "4分00秒"], ans: 1, hint: "计算：200 ÷ 60 = 3 余 20，即 3分20秒" },
+                { id: "l2_7", prompt: "图二 ④：335 秒等于几分钟几秒？", opts: ["5分25秒", "5分35秒", "6分15秒", "6分35秒"], ans: 1, hint: "计算：335 ÷ 60 = 5 余 35，即 5分35秒" },
+                { id: "l2_8", prompt: "图二 ④：8 分钟 12 秒等于多少秒？", opts: ["480 秒", "492 秒", "500 秒", "512 秒"], ans: 1, hint: "计算：(8 × 60) + 12 = 492 秒" }
             ]
         };
 
         let currentLevel = 'level1';
         let score = 0;
         let matchedCount = 0;
+        let currentChoiceIdx = 0;
         let activeDragCard = null;
         let dragOffset = { x: 0, y: 0 };
-        let originalPos = { x: 0, y: 0 };
 
-        const targetContainer = document.getElementById('targetContainer');
-        const sourceContainer = document.getElementById('sourceContainer');
+        const gameContent = document.getElementById('gameContent');
         const levelText = document.getElementById('levelText');
         const scoreText = document.getElementById('scoreText');
 
@@ -170,56 +158,67 @@
         function initLevel(levelKey) {
             currentLevel = levelKey;
             matchedCount = 0;
-            targetContainer.innerHTML = '';
-            sourceContainer.innerHTML = '';
-            levelText.innerText = levelKey === 'level1' ? '第一关：萌宠初体验' : '第二关：时空大挑战';
+            currentChoiceIdx = 0;
 
-            const questions = gameData[levelKey];
-            
-            // 渲染目标配对框
-            questions.forEach((q) => {
-                const targetBox = document.createElement('div');
-                targetBox.className = "drop-target bg-indigo-50/80 border-2 border-dashed border-indigo-300 rounded-2xl p-3 flex items-center justify-between min-h-[64px]";
-                targetBox.dataset.ans = q.targetAns;
-                targetBox.innerHTML = `
+            if (levelKey === 'level1') {
+                levelText.innerText = "第一关：拖拽配对 (简单)";
+                renderLevel1();
+            } else {
+                levelText.innerText = "第二关：混合选择题 (较难)";
+                renderLevel2Question();
+            }
+        }
+
+        // --- 第一关：拖拽渲染与逻辑 ---
+        function renderLevel1() {
+            gameContent.innerHTML = `
+                <div class="text-center mb-2">
+                    <p class="text-slate-600 font-bold text-xs md:text-sm">按住底部的【粉色糖果卡片】，拖进正确的【蓝色算式框】里！</p>
+                </div>
+                <div id="targetContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 my-auto"></div>
+                <div class="mt-3 pt-2 border-t-2 border-dashed border-amber-200">
+                    <div class="text-xs font-bold text-amber-600 mb-1 text-center"><i class="fas fa-hand-pointer mr-1"></i>待拖拽卡片：</div>
+                    <div id="sourceContainer" class="flex flex-wrap justify-center gap-2 min-h-[50px]"></div>
+                </div>
+            `;
+
+            const targetContainer = document.getElementById('targetContainer');
+            const sourceContainer = document.getElementById('sourceContainer');
+            const questions = gameData.level1;
+
+            questions.forEach(q => {
+                const box = document.createElement('div');
+                box.className = "drop-target bg-indigo-50/80 border-2 border-dashed border-indigo-300 rounded-2xl p-2.5 flex items-center justify-between";
+                box.dataset.ans = q.ans;
+                box.innerHTML = `
                     <span class="font-bold text-indigo-900 text-sm md:text-base ml-2">${q.prompt}</span>
-                    <div class="slot border-2 border-indigo-200 bg-white/60 rounded-xl w-32 md:w-36 h-10 flex items-center justify-center text-xs text-indigo-300 font-bold">
-                        放入对应答案
+                    <div class="slot border-2 border-indigo-200 bg-white/60 rounded-xl w-28 md:w-32 h-9 flex items-center justify-center text-xs text-indigo-300 font-bold">
+                        放入答案
                     </div>
                 `;
-                targetContainer.appendChild(targetBox);
+                targetContainer.appendChild(box);
             });
 
-            // 打乱答案顺序生成拖拽卡片
-            const shuffledAnswers = [...questions.map(q => q.targetAns)].sort(() => Math.random() - 0.5);
-
-            shuffledAnswers.forEach((ansText) => {
+            const shuffledAns = [...questions.map(q => q.ans)].sort(() => Math.random() - 0.5);
+            shuffledAns.forEach(ansText => {
                 const card = document.createElement('div');
-                card.className = "drag-card bg-gradient-to-r from-rose-400 to-pink-400 text-white font-black px-4 py-2 rounded-2xl shadow-md text-sm md:text-base border-2 border-white/50 active:scale-105 flex items-center gap-1.5 cursor-pointer";
+                card.className = "drag-card bg-gradient-to-r from-rose-400 to-pink-400 text-white font-black px-3 py-1.5 rounded-xl shadow-md text-xs md:text-sm border border-white/50 flex items-center gap-1 cursor-pointer";
                 card.dataset.val = ansText;
                 card.innerHTML = `<i class="fas fa-cookie-bite text-amber-200 text-xs"></i><span>${ansText}</span>`;
-                
-                // 绑定拖拽事件 (支持鼠标与触摸屏)
                 bindDragEvents(card);
                 sourceContainer.appendChild(card);
             });
         }
 
-        // 绑定全端通用拖拽事件
         function bindDragEvents(card) {
             const onStart = (e) => {
                 if (card.dataset.matched === "true") return;
                 activeDragCard = card;
-
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
                 const rect = card.getBoundingClientRect();
                 dragOffset.x = clientX - rect.left;
                 dragOffset.y = clientY - rect.top;
-
-                originalPos.x = rect.left;
-                originalPos.y = rect.top;
 
                 card.classList.add('dragging');
                 card.style.position = 'fixed';
@@ -227,109 +226,110 @@
                 card.style.top = `${rect.top}px`;
                 card.style.width = `${rect.width}px`;
             };
-
             card.addEventListener('mousedown', onStart);
             card.addEventListener('touchstart', onStart, { passive: false });
         }
 
-        const onMove = (e) => {
+        window.addEventListener('mousemove', (e) => {
             if (!activeDragCard) return;
-            if (e.cancelable) e.preventDefault();
-
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
             activeDragCard.style.left = `${clientX - dragOffset.x}px`;
             activeDragCard.style.top = `${clientY - dragOffset.y}px`;
-
-            // 高亮目标框
-            checkHoverTargets(clientX, clientY);
-        };
-
-        const onEnd = (e) => {
+        });
+        window.addEventListener('touchmove', (e) => {
             if (!activeDragCard) return;
+            if (e.cancelable) e.preventDefault();
+            const clientX = e.touches[0].clientX;
+            const clientY = e.touches[0].clientY;
+            activeDragCard.style.left = `${clientX - dragOffset.x}px`;
+            activeDragCard.style.top = `${clientY - dragOffset.y}px`;
+        }, { passive: false });
 
+        window.addEventListener('mouseup', handleDragEnd);
+        window.addEventListener('touchend', handleDragEnd);
+
+        function handleDragEnd(e) {
+            if (!activeDragCard) return;
             const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
             const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
 
-            const droppedTarget = getHoverTarget(clientX, clientY);
+            const targets = document.querySelectorAll('.drop-target');
+            let droppedTarget = null;
+            targets.forEach(t => {
+                const rect = t.getBoundingClientRect();
+                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                    droppedTarget = t;
+                }
+            });
 
             if (droppedTarget && droppedTarget.dataset.ans === activeDragCard.dataset.val) {
-                // 匹配正确
-                handleMatchSuccess(activeDragCard, droppedTarget);
-            } else {
-                // 匹配错误/放回原位
-                handleMatchFail(activeDragCard);
-            }
+                // 配对成功
+                activeDragCard.dataset.matched = "true";
+                activeDragCard.classList.remove('dragging');
+                activeDragCard.style.position = 'static';
+                activeDragCard.style.width = 'auto';
+                activeDragCard.className = "bg-emerald-500 text-white font-black px-3 py-1 rounded-lg text-xs shadow-sm animate-bounce-short";
 
-            clearHoverTargets();
-            activeDragCard = null;
-        };
+                const slot = droppedTarget.querySelector('.slot');
+                slot.innerHTML = '';
+                slot.appendChild(activeDragCard);
+                droppedTarget.className = "drop-target bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-2.5 flex items-center justify-between";
 
-        window.addEventListener('mousemove', onMove);
-        window.addEventListener('touchmove', onMove, { passive: false });
-        window.addEventListener('mouseup', onEnd);
-        window.addEventListener('touchend', onEnd);
+                score += 10;
+                scoreText.innerText = score;
+                matchedCount++;
 
-        // 检测悬停框
-        function getHoverTarget(x, y) {
-            const targets = document.querySelectorAll('.drop-target');
-            for (let t of targets) {
-                const rect = t.getBoundingClientRect();
-                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                    return t;
+                if (matchedCount >= gameData.level1.length) {
+                    setTimeout(showWinModal, 500);
                 }
+            } else {
+                // 放回原位
+                activeDragCard.classList.remove('dragging');
+                activeDragCard.style.position = 'static';
+                activeDragCard.style.width = 'auto';
+                document.getElementById('sourceContainer').appendChild(activeDragCard);
             }
-            return null;
+            activeDragCard = null;
         }
 
-        function checkHoverTargets(x, y) {
-            document.querySelectorAll('.drop-target').forEach(t => {
-                const rect = t.getBoundingClientRect();
-                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                    t.classList.add('drag-over');
-                } else {
-                    t.classList.remove('drag-over');
-                }
+        // --- 第二关：选择题渲染与逻辑 ---
+        function renderLevel2Question() {
+            const qData = gameData.level2[currentChoiceIdx];
+            gameContent.innerHTML = `
+                <div class="flex-1 flex flex-col justify-center items-center max-w-xl mx-auto w-full">
+                    <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 md:p-6 w-full text-center mb-6 shadow-sm">
+                        <span class="text-xs font-bold text-indigo-500 bg-indigo-100 px-3 py-1 rounded-full mb-2 inline-block">第 ${currentChoiceIdx + 1} / ${gameData.level2.length} 题</span>
+                        <h3 class="text-lg md:text-2xl font-black text-slate-800">${qData.prompt}</h3>
+                    </div>
+                    <div id="choiceOptions" class="grid grid-cols-2 gap-3 w-full"></div>
+                </div>
+            `;
+
+            const choiceOptions = document.getElementById('choiceOptions');
+            qData.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white hover:bg-amber-100 border-2 border-amber-300 hover:border-amber-400 py-3 px-4 rounded-2xl font-bold text-slate-700 text-sm md:text-base shadow-sm transition active:scale-95";
+                btn.innerText = opt;
+                btn.onclick = () => checkChoiceAnswer(idx);
+                choiceOptions.appendChild(btn);
             });
         }
 
-        function clearHoverTargets() {
-            document.querySelectorAll('.drop-target').forEach(t => t.classList.remove('drag-over'));
-        }
-
-        // 处理匹配成功
-        function handleMatchSuccess(card, target) {
-            card.dataset.matched = "true";
-            card.classList.remove('dragging');
-            card.style.position = 'static';
-            card.style.width = 'auto';
-            card.className = "bg-emerald-500 text-white font-black px-3 py-1.5 rounded-xl text-sm shadow-sm flex items-center gap-1 animate-bounce-short";
-
-            const slot = target.querySelector('.slot');
-            slot.innerHTML = '';
-            slot.appendChild(card);
-            slot.className = "rounded-xl flex items-center justify-center";
-
-            target.className = "drop-target bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 flex items-center justify-between min-h-[64px]";
-
-            score += 25;
-            scoreText.innerText = score;
-            matchedCount++;
-
-            createParticles(target.getBoundingClientRect().left + 50, target.getBoundingClientRect().top + 20);
-
-            if (matchedCount >= gameData[currentLevel].length) {
-                setTimeout(showWinModal, 600);
+        function checkChoiceAnswer(selectedIdx) {
+            const qData = gameData.level2[currentChoiceIdx];
+            if (selectedIdx === qData.ans) {
+                score += 15;
+                scoreText.innerText = score;
+                currentChoiceIdx++;
+                if (currentChoiceIdx >= gameData.level2.length) {
+                    showWinModal();
+                } else {
+                    renderLevel2Question();
+                }
+            } else {
+                alert("答错了哦，可以点击右上角【提示】看看解题思路！");
             }
-        }
-
-        // 处理匹配失败 (回弹)
-        function handleMatchFail(card) {
-            card.classList.remove('dragging');
-            card.style.position = 'static';
-            card.style.width = 'auto';
-            sourceContainer.appendChild(card);
         }
 
         // 结算弹窗
@@ -340,17 +340,17 @@
             const nextBtn = document.getElementById('nextLevelBtn');
 
             if (currentLevel === 'level1') {
-                winTitle.innerText = "🎉 第一关顺利通关！";
-                winDesc.innerText = "你太棒了！基础单位换算完全难不倒你，准备好挑战更刺激的第二关了吗？";
-                nextBtn.innerText = "开启第二关";
+                winTitle.innerText = "🎉 第一关拖拽通关！";
+                winDesc.innerText = "太棒啦！基础换算全对！接下来挑战第二关较难的选择题吧！";
+                nextBtn.innerText = "进入第二关";
                 nextBtn.onclick = () => {
                     winModal.classList.add('hidden');
                     initLevel('level2');
                 };
             } else {
-                winTitle.innerText = "🏆 获得【换算小达人】勋章！";
-                winDesc.innerText = `太厉害啦！你完成了所有练习，最终得分：${score} 分！`;
-                nextBtn.innerText = "再玩一次";
+                winTitle.innerText = "🏆 通关！获得【时间小大师】勋章！";
+                winDesc.innerText = `恭喜你完成了两张图片里的所有题目！最终得分：${score} 分！`;
+                nextBtn.innerText = "重新挑战";
                 nextBtn.onclick = () => {
                     score = 0;
                     scoreText.innerText = score;
@@ -363,61 +363,28 @@
 
         // 提示弹窗
         document.getElementById('hintBtn').onclick = () => {
-            const hints = gameData[currentLevel].map(q => `• ${q.prompt} 👉 ${q.hint}`).join('<br><br>');
-            document.getElementById('hintText').innerHTML = hints;
+            const hintText = document.getElementById('hintText');
+            if (currentLevel === 'level1') {
+                hintText.innerHTML = gameData.level1.map(q => `• <b>${q.prompt}</b> 👉 ${q.hint}`).join('<br><br>');
+            } else {
+                const qData = gameData.level2[currentChoiceIdx];
+                hintText.innerHTML = `<b>当前题目提示：</b><br>${qData.hint}`;
+            }
             document.getElementById('hintModal').classList.remove('hidden');
         };
         document.getElementById('closeHint').onclick = () => {
             document.getElementById('hintModal').classList.add('hidden');
         };
 
-        // Canvas 简易粒子星光背景
+        // Canvas 简易星光背景
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
-        let particles = [];
-
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
-
-        function createParticles(x, y) {
-            for (let i = 0; i < 20; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    color: `hsl(${Math.random() * 50 + 30}, 100%, 60%)`,
-                    size: Math.random() * 6 + 2,
-                    alpha: 1
-                });
-            }
-        }
-
-        function renderParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = particles.length - 1; i >= 0; i--) {
-                let p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.alpha -= 0.03;
-                if (p.alpha <= 0) {
-                    particles.splice(i, 1);
-                } else {
-                    ctx.save();
-                    ctx.globalAlpha = p.alpha;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            }
-            requestAnimationFrame(renderParticles);
-        }
-        renderParticles();
 
         // 草稿纸功能
         const scratchModal = document.getElementById('scratchpadModal');
@@ -456,7 +423,7 @@
         scratchCanvas.addEventListener('touchend', () => { isDrawing = false; scratchCtx.beginPath(); });
         scratchCanvas.addEventListener('touchmove', draw);
 
-        // 启动游戏
+        // 启动第一关
         initLevel('level1');
     </script>
 </body>
