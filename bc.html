@@ -69,9 +69,21 @@
         </div>
 
         <!-- 视图 2：游戏核心关卡区 -->
-        <div id="gameScreen" class="hidden flex-1 p-4 md:p-6 flex flex-col justify-between">
+        <div id="gameScreen" class="hidden flex-1 p-4 md:p-6 flex flex-col justify-between relative">
             <div id="gameZone" class="flex-1 flex flex-col justify-center">
                 <!-- 动态渲染题目 -->
+            </div>
+
+            <!-- 答错时的正解弹窗 (默认隐藏) -->
+            <div id="feedbackOverlay" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-20 p-4">
+                <div class="bg-white rounded-3xl p-6 border-4 border-rose-400 shadow-2xl text-center max-w-xs w-full animate-pop">
+                    <div class="text-4xl mb-2">💡</div>
+                    <div class="text-slate-500 font-bold text-sm mb-1">看清楚正确的汉字哦：</div>
+                    <div class="text-2xl font-black text-slate-800 my-2">
+                        正确答案是 <span id="feedbackCorrectChar" class="text-rose-500 text-3xl font-black underline mx-1"></span>
+                    </div>
+                    <div class="text-xs text-slate-400 mt-2">1 秒后自动进入下一题...</div>
+                </div>
             </div>
         </div>
 
@@ -168,7 +180,7 @@
             { pinyin: "duì", characters: [ { char: "队", pre: "排", post: "" }, { char: "对", pre: "", post: "面" } ] }
         ];
 
-        // 预设的演示排行榜数据（供试玩者展示效果）
+        // 预设的演示排行榜数据
         const demoLeaderboard = [
             { name: "学霸小明", score: 200, time: 18 },
             { name: "识字小达人", score: 200, time: 22 },
@@ -188,12 +200,12 @@
         }
 
         // 状态管理
-        let isDemoMode = true; // 当前是否为试玩模式
         let currentQuestionIdx = 0;
         let score = 0;
         let timerSeconds = 0;
         let timerInterval = null;
         let questions = [];
+        let isAnsweringBlocked = false; // 防止快速连击
 
         // 渲染排行榜效果
         function renderLeaderboard() {
@@ -229,6 +241,7 @@
             currentQuestionIdx = 0;
             score = 0;
             timerSeconds = 0;
+            isAnsweringBlocked = false;
 
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('topBar').classList.remove('hidden');
@@ -271,27 +284,42 @@
         }
 
         function checkAnswer(selected, correct) {
+            if (isAnsweringBlocked) return;
+
             if (selected === correct) {
                 Sound.correct();
                 score += 10;
-                currentQuestionIdx++;
-
-                if (currentQuestionIdx >= questions.length) {
-                    endGame();
-                } else {
-                    loadQuestion();
-                }
+                nextQuestion();
             } else {
                 Sound.wrong();
-                alert(`选错咯！正确答案是【${correct}】`);
+                isAnsweringBlocked = true;
+
+                // 弹出正解遮罩
+                document.getElementById('feedbackCorrectChar').innerText = correct;
+                const overlay = document.getElementById('feedbackOverlay');
+                overlay.classList.remove('hidden');
+
+                // 停留 1 秒后自动切换下一题
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    isAnsweringBlocked = false;
+                    nextQuestion();
+                }, 1000);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            if (currentQuestionIdx >= questions.length) {
+                endGame();
+            } else {
+                loadQuestion();
             }
         }
 
         function endGame() {
             clearInterval(timerInterval);
             Sound.win();
-
-            // 注意：试玩模式下故意跳过排行榜保存，不把试玩成绩写入 demoLeaderboard
 
             document.getElementById('topBar').classList.add('hidden');
             document.getElementById('gameScreen').classList.add('hidden');
@@ -307,7 +335,6 @@
             renderLeaderboard();
         }
 
-        // 初始化页面加载效果排行榜
         renderLeaderboard();
     </script>
 </body>
