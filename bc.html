@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>趣味同音字大冒险 ✏️</title>
+    <title>同音字小达人 ✏️</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -16,24 +16,6 @@
             background: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #06b6d4 100%);
         }
 
-        .drop-zone {
-            transition: all 0.2s ease;
-        }
-        .drop-zone.drag-over {
-            background-color: #fef08a;
-            border-color: #eab308;
-            transform: scale(1.05);
-        }
-
-        .draggable-card {
-            cursor: grab;
-            transition: transform 0.15s ease;
-        }
-        .draggable-card:active {
-            cursor: grabbing;
-            transform: scale(0.95);
-        }
-
         @keyframes pop {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -44,7 +26,7 @@
 <body class="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 text-slate-800">
 
     <!-- 游戏主容器 -->
-    <div class="relative w-full max-w-2xl bg-white/95 backdrop-blur-md border-4 border-yellow-300 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
+    <div class="relative w-full max-w-2xl bg-white/95 backdrop-blur-md border-4 border-yellow-300 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[550px]">
         
         <!-- 顶栏：信息显示区 -->
         <div id="topBar" class="hidden bg-yellow-100 border-b-2 border-yellow-200 p-3 flex justify-between items-center z-10">
@@ -52,8 +34,8 @@
                 <span id="playerBadge" class="bg-purple-500 text-white px-3 py-1 rounded-xl text-xs font-black">
                     👤 玩家: <span id="displayName">--</span>
                 </span>
-                <span id="stageBadge" class="bg-blue-500 text-white px-3 py-1 rounded-xl text-xs font-black">
-                    第一阶段：拖拽填空 🧩
+                <span class="bg-blue-500 text-white px-3 py-1 rounded-xl text-xs font-black">
+                    同音字大挑战 🎯
                 </span>
             </div>
             <div class="flex items-center gap-3 font-black text-sm">
@@ -66,7 +48,7 @@
         <div id="startScreen" class="flex-1 flex flex-col items-center justify-center p-6 text-center animate-pop">
             <div class="text-6xl mb-4">✏️📚</div>
             <h1 class="text-3xl font-black text-purple-700 mb-2">同音字大冒险</h1>
-            <p class="text-slate-500 text-sm mb-6">识字一至第 8 单元 · 同音字闯关竞赛</p>
+            <p class="text-slate-500 text-sm mb-6">识字一至第 8 单元 · 选字构词闯关</p>
             
             <div class="w-full max-w-xs space-y-4">
                 <input type="text" id="playerNameInput" placeholder="请输入你的名字..." 
@@ -175,7 +157,7 @@
             }
         };
 
-        // 题库（来自于识字一至第8单元的同音字）
+        // 识字一至第8单元同音字数据
         const pinyinData = [
             { pinyin: "diǎn", characters: [ { char: "典", word: "字典", pre: "字", post: "" }, { char: "点", word: "点头", pre: "", post: "头" } ] },
             { pinyin: "zhù", characters: [ { char: "祝", word: "祝福", pre: "", post: "福" }, { char: "助", word: "帮助", pre: "帮", post: "" }, { char: "住", word: "居住", pre: "居", post: "" } ] },
@@ -190,21 +172,18 @@
 
         // 游戏全局状态
         let playerName = "";
-        let currentStage = 1; // 1 或 2
         let currentQuestionIdx = 0;
         let score = 0;
         let timerSeconds = 0;
         let timerInterval = null;
-        let stage1Questions = [];
-        let stage2Questions = [];
-        let currentGroupCorrect = 0; // 当前拖拽题填对的个数计数器
+        let questions = [];
 
-        // 初始化/显示英雄榜
+        // 显示英雄榜
         function renderLeaderboard() {
-            const leaderboard = JSON.parse(localStorage.getItem('homophone_leaderboard') || '[]');
+            const leaderboard = JSON.parse(localStorage.getItem('homophone_single_leaderboard') || '[]');
             const container = document.getElementById('miniLeaderboard');
             if (leaderboard.length === 0) {
-                container.innerHTML = `<div class="text-slate-400">暂无记录，快来成为第一名吧！</div>`;
+                container.innerHTML = `<div class="text-slate-400">暂无记录，快来抢占第一名！</div>`;
                 return;
             }
             container.innerHTML = leaderboard.slice(0, 5).map((item, index) => `
@@ -215,12 +194,12 @@
             `).join('');
         }
 
-        // 保存成绩到排行榜
+        // 保存成绩
         function saveScore(name, finalScore, finalTime) {
-            let leaderboard = JSON.parse(localStorage.getItem('homophone_leaderboard') || '[]');
+            let leaderboard = JSON.parse(localStorage.getItem('homophone_single_leaderboard') || '[]');
             leaderboard.push({ name, score: finalScore, time: finalTime });
             leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
-            localStorage.setItem('homophone_leaderboard', JSON.stringify(leaderboard));
+            localStorage.setItem('homophone_single_leaderboard', JSON.stringify(leaderboard));
         }
 
         function startGame() {
@@ -232,27 +211,28 @@
             playerName = input;
             document.getElementById('displayName').innerText = playerName;
 
-            // 准备关卡数据
-            stage1Questions = [...pinyinData];
-            
-            // 阶段2选择题生成
-            stage2Questions = [];
+            // 生成题目并打乱
+            questions = [];
             pinyinData.forEach(group => {
                 const allChars = group.characters.map(c => c.char);
                 group.characters.forEach(item => {
-                    stage2Questions.push({
+                    // 彻底打乱选项顺序
+                    const shuffledOptions = [...allChars].sort(() => Math.random() - 0.5);
+                    
+                    questions.push({
                         pinyin: group.pinyin,
                         pre: item.pre,
                         post: item.post,
                         correctChar: item.char,
-                        options: allChars
+                        options: shuffledOptions
                     });
                 });
             });
-            stage2Questions.sort(() => Math.random() - 0.5);
 
-            // 重置数据
-            currentStage = 1;
+            // 打乱题目出现的顺序
+            questions.sort(() => Math.random() - 0.5);
+
+            // 重置状态
             currentQuestionIdx = 0;
             score = 0;
             timerSeconds = 0;
@@ -269,154 +249,50 @@
                 document.getElementById('timerText').innerText = `${timerSeconds}s`;
             }, 1000);
 
-            loadStageQuestion();
+            loadQuestion();
         }
 
-        function loadStageQuestion() {
+        function loadQuestion() {
             document.getElementById('scoreText').innerText = score;
             const gameZone = document.getElementById('gameZone');
+            const qData = questions[currentQuestionIdx];
 
-            if (currentStage === 1) {
-                currentGroupCorrect = 0; // 重置本组答对的计数
-                document.getElementById('stageBadge').innerText = "第一阶段：拖拽填空 🧩";
-                const qData = stage1Questions[currentQuestionIdx];
-                
-                gameZone.innerHTML = `
-                    <div class="text-center mb-6">
-                        <span class="text-xs font-bold bg-purple-100 text-purple-600 px-3 py-1 rounded-full">
-                            第 ${currentQuestionIdx + 1} / ${stage1Questions.length} 组
-                        </span>
-                        <h2 class="text-2xl font-black text-slate-800 mt-2">拼音: <span class="text-purple-600 font-serif">${qData.pinyin}</span></h2>
-                        <p class="text-xs text-slate-500 mt-1">请将正确的汉字拖拽到对应的词语空格中</p>
+            gameZone.innerHTML = `
+                <div class="text-center mb-6">
+                    <span class="text-xs font-bold bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
+                        第 ${currentQuestionIdx + 1} / ${questions.length} 题
+                    </span>
+                    <h2 class="text-xl font-black text-slate-700 mt-3">读音 (${qData.pinyin})，请选择正确的汉字：</h2>
+                    <div class="text-3xl font-black text-purple-700 mt-4 bg-purple-50 border-2 border-purple-200 py-4 rounded-2xl max-w-xs mx-auto shadow-sm">
+                        ${qData.pre} <span class="text-rose-500 underline underline-offset-8">__</span> ${qData.post}
                     </div>
+                </div>
 
-                    <!-- 可拖拽字卡 -->
-                    <div class="flex justify-center gap-4 mb-8" id="draggableContainer">
-                        ${qData.characters.map((item) => `
-                            <div class="draggable-card bg-amber-300 hover:bg-amber-400 border-2 border-amber-500 text-amber-950 font-black text-2xl w-14 h-14 rounded-2xl flex items-center justify-center shadow-md active:scale-95"
-                                 draggable="true" ondragstart="handleDragStart(event, '${item.char}')">
-                                ${item.char}
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <!-- 放置目标词语 -->
-                    <div class="space-y-4 max-w-sm mx-auto">
-                        ${qData.characters.map((item, idx) => `
-                            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 flex items-center justify-center gap-2 text-xl font-bold">
-                                <span>${item.pre}</span>
-                                <div class="drop-zone w-12 h-12 border-2 border-dashed border-indigo-400 bg-white rounded-xl flex items-center justify-center text-purple-700 font-black text-2xl"
-                                     ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${item.char}')">
-                                    ?
-                                </div>
-                                <span>${item.post}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-
-            } else {
-                document.getElementById('stageBadge').innerText = "第二阶段：快速选择 🎯";
-                const qData = stage2Questions[currentQuestionIdx];
-
-                gameZone.innerHTML = `
-                    <div class="text-center mb-6">
-                        <span class="text-xs font-bold bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
-                            第 ${currentQuestionIdx + 1} / ${stage2Questions.length} 题
-                        </span>
-                        <h2 class="text-xl font-black text-slate-700 mt-3">读音 (${qData.pinyin})，选择正确的字填入：</h2>
-                        <div class="text-3xl font-black text-purple-700 mt-4 bg-purple-50 border-2 border-purple-200 py-4 rounded-2xl max-w-xs mx-auto shadow-sm">
-                            ${qData.pre} <span class="text-rose-500 underline underline-offset-8">__</span> ${qData.post}
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 max-w-xs mx-auto mt-4">
-                        ${qData.options.map(opt => `
-                            <button onclick="checkStage2Answer('${opt}', '${qData.correctChar}')"
-                                    class="bg-white border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 text-slate-800 font-black text-2xl py-3 rounded-2xl shadow-sm transition active:scale-95">
-                                ${opt}
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
-            }
+                <div class="grid grid-cols-2 gap-4 max-w-xs mx-auto mt-4">
+                    ${qData.options.map(opt => `
+                        <button onclick="checkAnswer('${opt}', '${qData.correctChar}')"
+                                class="bg-white border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 text-slate-800 font-black text-2xl py-3 rounded-2xl shadow-sm transition active:scale-95">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
         }
 
-        // --- 第一阶段拖拽逻辑 ---
-        let draggedChar = null;
-
-        function handleDragStart(e, char) {
-            draggedChar = char;
-            e.dataTransfer.setData("text/plain", char);
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleDrop(e, targetCorrectChar) {
-            e.preventDefault();
-            const dropZone = e.currentTarget;
-            dropZone.classList.remove('drag-over');
-
-            // 避免对同一个框重复拖拽触发
-            if (dropZone.dataset.completed === "true") return;
-
-            if (draggedChar === targetCorrectChar) {
-                Sound.correct();
-                dropZone.dataset.completed = "true";
-                dropZone.innerText = draggedChar;
-                dropZone.className = "w-12 h-12 bg-emerald-400 text-white font-black text-2xl rounded-xl flex items-center justify-center shadow-md animate-pop";
-                dropZone.removeAttribute('ondragover');
-                
-                score += 10;
-                document.getElementById('scoreText').innerText = score;
-
-                currentGroupCorrect++; // 答对计一数
-                const currentQ = stage1Questions[currentQuestionIdx];
-
-                // 判断是否当前组的所有词语都填对了
-                if (currentGroupCorrect >= currentQ.characters.length) {
-                    setTimeout(() => {
-                        currentQuestionIdx++;
-                        if (currentQuestionIdx >= stage1Questions.length) {
-                            // 进入第二阶段
-                            currentStage = 2;
-                            currentQuestionIdx = 0;
-                            alert("🎉 太棒了！第一阶段全部通关！准备进入【第二阶段：快速选择】！");
-                        }
-                        loadStageQuestion();
-                    }, 400);
-                }
-            } else {
-                Sound.wrong();
-                dropZone.classList.add('bg-rose-100', 'border-rose-400');
-                setTimeout(() => {
-                    dropZone.classList.remove('bg-rose-100', 'border-rose-400');
-                }, 500);
-            }
-        }
-
-        // --- 第二阶段点击逻辑 ---
-        function checkStage2Answer(selected, correct) {
+        function checkAnswer(selected, correct) {
             if (selected === correct) {
                 Sound.correct();
                 score += 10;
                 currentQuestionIdx++;
 
-                if (currentQuestionIdx >= stage2Questions.length) {
+                if (currentQuestionIdx >= questions.length) {
                     endGame();
                 } else {
-                    loadStageQuestion();
+                    loadQuestion();
                 }
             } else {
                 Sound.wrong();
-                alert(`再想想看哦！正确答案是【${correct}】`);
+                alert(`选错咯！正确答案是【${correct}】`);
             }
         }
 
@@ -440,7 +316,7 @@
             renderLeaderboard();
         }
 
-        // 页面首次加载
+        // 页面初始化
         renderLeaderboard();
     </script>
 </body>
