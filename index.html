@@ -2,309 +2,288 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>度量衡奇幻冒险 - 萌宠大闯关</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>度量衡大冒险 ⚖️🧪</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+SC:wght@500;700;900&display=swap');
-        
         body {
-            font-family: 'Noto Sans SC', sans-serif;
-            touch-action: manipulation;
-            user-select: none;
-            background: linear-gradient(135deg, #fef3c7 0%, #e0e7ff 50%, #fbcfe8 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            color: #333;
         }
-        .font-game { font-family: 'Fredoka One', cursive; }
-
-        .card-pop {
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .game-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
         }
-        .card-pop:hover {
-            transform: translateY(-4px) scale(1.02);
+        .progress-bar {
+            background: #eee;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
         }
-
-        @keyframes bounce-gentle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        .progress {
+            background: #4CAF50;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
         }
-        .animate-bounce-gentle { animation: bounce-gentle 1.5s infinite ease-in-out; }
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #6e8efb;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+        button {
+            background: #6e8efb;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #5a7bef;
+            transform: scale(1.05);
+        }
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 15px;
+            height: 30px;
+        }
+        .score-board {
+            font-size: 1.5rem;
+            color: #ff9800;
+            font-weight: bold;
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 text-slate-800">
+<body>
 
-    <!-- 主容器 -->
-    <div class="relative w-full max-w-3xl bg-white/90 backdrop-blur-md border-4 border-amber-300 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
+<div class="game-card">
+    <div id="start-screen">
+        <h1>⚖️ 度量衡大冒险 🧪</h1>
+        <p>准备好挑战两张工作表里的 18 道难题了吗？</p>
+        <p>目标分数：<b>100 分</b> 🌟</p>
+        <button onclick="startGame()">开始挑战 🚀</button>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <div class="progress-bar"><div class="progress" id="progress"></div></div>
+        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span id="q-num">第 1/18 题</span>
+            <span class="score-board">得分: <span id="score">0</span></span>
+        </div>
         
-        <!-- 顶栏信息 -->
-        <div class="bg-amber-100/90 border-b-2 border-amber-200 p-3 md:p-4 flex justify-between items-center z-10">
-            <div class="flex items-center space-x-2 md:space-x-4">
-                <span id="stageBadge" class="bg-amber-400 text-amber-950 px-3 py-1 rounded-2xl text-xs md:text-sm font-black flex items-center gap-1 shadow-sm">
-                    📏 阶段 1：长度城堡
-                </span>
-                <span class="text-rose-500 font-game text-sm md:text-base flex items-center gap-1">
-                    <i class="fas fa-star text-amber-400"></i> 得分: <span id="scoreText">0</span>
-                </span>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button id="soundBtn" class="bg-purple-300 hover:bg-purple-400 text-purple-950 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
-                    <i class="fas fa-volume-up" id="soundIcon"></i> 音效
-                </button>
-            </div>
-        </div>
-
-        <!-- 关卡进度条 -->
-        <div class="w-full bg-amber-50 h-3 border-b border-amber-200">
-            <div id="progressBar" class="bg-gradient-to-r from-amber-400 to-rose-400 h-full w-0 transition-all duration-300"></div>
-        </div>
-
-        <!-- 游戏核心交互区 -->
-        <div id="gameZone" class="relative flex-1 p-4 md:p-8 flex flex-col justify-between z-10">
-            <!-- 内容动态渲染 -->
-        </div>
-
-        <!-- 底部勋章展览馆 -->
-        <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-around items-center text-xs font-bold text-slate-500">
-            <span class="flex items-center gap-1 opacity-40" id="badge1">📏 长度小能手</span>
-            <span class="flex items-center gap-1 opacity-40" id="badge2">⚖️ 重量大力士</span>
-            <span class="flex items-center gap-1 opacity-40" id="badge3">🧪 魔法炼金术士</span>
-        </div>
+        <div class="question-box" id="question">题目加载中...</div>
+        <div id="input-area"></div>
+        
+        <button onclick="submitAnswer()" id="submit-btn">提交答案 ✏️</button>
+        <div class="feedback" id="feedback"></div>
     </div>
 
-    <!-- 关卡/游戏结算弹窗 -->
-    <div id="rewardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white border-4 border-amber-400 rounded-3xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl">
-            <div id="modalEmoji" class="text-6xl mb-3 animate-bounce-gentle">🏆</div>
-            <h2 id="modalTitle" class="text-2xl font-black text-slate-800 mb-2">解锁新勋章！</h2>
-            <p id="modalDesc" class="text-slate-600 text-sm mb-6">你太棒了！获得了【长度小能手】勋章！</p>
-            <button id="modalBtn" class="w-full bg-gradient-to-r from-amber-400 to-rose-400 hover:from-amber-500 hover:to-rose-500 text-white font-black py-3 rounded-2xl shadow-lg transition active:scale-95 text-base">
-                进入下一关
-            </button>
-        </div>
+    <div id="end-screen" style="display: none;">
+        <h1>🎉 挑战完成！</h1>
+        <p>你的最终得分是：</p>
+        <div class="score-board" style="font-size: 3rem;" id="final-score">0 / 100</div>
+        <p id="evaluation"></p>
+        <button onclick="location.reload()">再玩一次 🔄</button>
     </div>
+</div>
 
-    <script>
-        // 音频合成器
-        let soundEnabled = true;
-        let audioCtx = null;
+<script>
+// 音效系统 (Web Audio API)
+let audioCtx = null;
 
-        function getAudioContext() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return audioCtx;
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+const Sound = {
+    correct() {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    },
+    wrong() {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now); // A3
+        osc.frequency.linearRampToValueAtTime(130, now + 0.2); // C3
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    },
+    win() {
+        const ctx = getAudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+            const now = ctx.currentTime + idx * 0.1;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        });
+    }
+};
+
+const questions = [
+    // 质量换算 (图1 Section 六)
+    { q: "7 kg = ____ g", inputs: 1, labels: ["g"], ans: [7000], pts: 5 },
+    { q: "12 kg = ____ g", inputs: 1, labels: ["g"], ans: [12000], pts: 5 },
+    { q: "10 000 g = ____ kg", inputs: 1, labels: ["kg"], ans: [10], pts: 5 },
+    { q: "2 000 g = ____ kg", inputs: 1, labels: ["kg"], ans: [2], pts: 5 },
+    { q: "8 kg 80 g = ____ g", inputs: 1, labels: ["g"], ans: [8080], pts: 5 },
+    { q: "4 640 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [4, 640], pts: 5 },
+    
+    // 质量加减法 (图1 Section 七 & 八)
+    { q: "35 kg + 25 kg = ____ kg", inputs: 1, labels: ["kg"], ans: [60], pts: 5 },
+    { q: "1 kg 80 g + 3 kg 560 g + 4 kg 725 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [9, 365], pts: 6 },
+    { q: "7 kg 85 g - 2 kg 500 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [4, 585], pts: 6 },
+    { q: "15 kg 780 g - 6 kg 420 g - 5 kg 300 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [4, 60], pts: 6 },
+
+    // 容量换算 (图2 Section G)
+    { q: "8 升 = ____ 毫升", inputs: 1, labels: ["毫升"], ans: [8000], pts: 5 },
+    { q: "4 000 毫升 = ____ 升", inputs: 1, labels: ["升"], ans: [4], pts: 5 },
+    { q: "7 880 ml = ____ l ____ ml", inputs: 2, labels: ["l", "ml"], ans: [7, 880], pts: 5 },
+    { q: "9 l 10 ml = ____ ml", inputs: 1, labels: ["ml"], ans: [9010], pts: 5 },
+
+    // 容量加减法 (图2 Section H)
+    { q: "6 升 28 毫升 + 3 升 72 毫升 = ____ 升 ____ 毫升", inputs: 2, labels: ["升", "毫升"], ans: [9, 100], pts: 6 },
+    { q: "555 ml + 66 ml + 465 ml = ____ l ____ ml", inputs: 2, labels: ["l", "ml"], ans: [1, 86], pts: 6 },
+    { q: "20 l 320 ml - 15 l 535 ml = ____ l ____ ml", inputs: 2, labels: ["l", "ml"], ans: [4, 785], pts: 6 },
+    { q: "758 ml - [ ? ] ml - 28 ml = 425 ml<br>请算出 [ ? ] 里的数值：", inputs: 1, labels: ["ml"], ans: [305], pts: 7 }
+];
+
+let currentIndex = 0;
+let score = 0;
+
+function startGame() {
+    getAudioContext(); // 初始化音频
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = questions[currentIndex];
+    document.getElementById('q-num').innerText = `第 ${currentIndex + 1}/${questions.length} 题`;
+    document.getElementById('progress').style.width = `${((currentIndex) / questions.length) * 100}%`;
+    document.getElementById('question').innerHTML = q.q;
+    document.getElementById('feedback').innerText = '';
+    
+    let inputHtml = '';
+    for(let i = 0; i < q.inputs; i++) {
+        inputHtml += `<input type="number" id="ans${i}"> ${q.labels[i]} `;
+    }
+    document.getElementById('input-area').innerHTML = inputHtml;
+    document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+    const q = questions[currentIndex];
+    let correct = true;
+
+    for(let i = 0; i < q.inputs; i++) {
+        const userAns = parseInt(document.getElementById(`ans${i}`).value);
+        if(userAns !== q.ans[i]) {
+            correct = false;
+            break;
         }
+    }
 
-        const Sound = {
-            correct() {
-                if (!soundEnabled) return;
-                const ctx = getAudioContext();
-                const now = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.25);
-            },
-            wrong() {
-                if (!soundEnabled) return;
-                const ctx = getAudioContext();
-                const now = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(220, now);
-                osc.frequency.linearRampToValueAtTime(130, now + 0.2);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.25);
-            },
-            win() {
-                if (!soundEnabled) return;
-                const ctx = getAudioContext();
-                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-                    const now = ctx.currentTime + idx * 0.1;
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.3);
-                });
-            }
-        };
+    const feedbackEl = document.getElementById('feedback');
+    document.getElementById('submit-btn').disabled = true;
 
-        document.getElementById('soundBtn').onclick = () => {
-            soundEnabled = !soundEnabled;
-            document.getElementById('soundIcon').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
-        };
+    if(correct) {
+        Sound.correct(); // 播放答对音效
+        score += q.pts;
+        document.getElementById('score').innerText = score;
+        feedbackEl.style.color = '#4CAF50';
+        feedbackEl.innerText = `✅ 太棒了！答对了 (+${q.pts}分)`;
+    } else {
+        Sound.wrong(); // 播放答错音效
+        feedbackEl.style.color = '#f44336';
+        feedbackEl.innerText = `❌ 答错了，正确答案是: ${q.ans.join(' , ')}`;
+    }
 
-        // 三个阶段全部题目（来自三张图片）
-        const stages = [
-            {
-                name: "阶段 1：长度城堡 📏",
-                badgeId: "badge1",
-                badgeName: "📏 长度小能手",
-                questions: [
-                    { q: "2 米 =", opts: ["20 厘米", "200 厘米", "2000 厘米", "20000 厘米"], a: 1 },
-                    { q: "7 m =", opts: ["70 cm", "700 cm", "7000 cm", "70000 cm"], a: 1 },
-                    { q: "400 厘米 =", opts: ["4 米", "40 米", "400 米", "4000 米"], a: 0 },
-                    { q: "500 cm =", opts: ["50 m", "5 m", "0.5 m", "500 m"], a: 1 },
-                    { q: "3 米 55 厘米 =", opts: ["35 厘米", "355 厘米", "3550 厘米", "3055 厘米"], a: 1 },
-                    { q: "850 cm =", opts: ["8 m 5 cm", "8 m 50 cm", "85 m 0 cm", "8 m 500 cm"], a: 1 },
-                    { q: "6 m 20 cm =", opts: ["620 cm", "602 cm", "6200 cm", "62 cm"], a: 0 },
-                    { q: "4 508 cm =", opts: ["45 m 8 cm", "4 m 508 cm", "45 m 80 cm", "450 m 8 cm"], a: 0 }
-                ]
-            },
-            {
-                name: "阶段 2：重量森林 ⚖️",
-                badgeId: "badge2",
-                badgeName: "⚖️ 重量大力士",
-                questions: [
-                    { q: "4 公斤 =", opts: ["40 克", "400 克", "4000 克", "40000 克"], a: 2 },
-                    { q: "3 kg =", opts: ["30 g", "300 g", "3000 g", "30000 g"], a: 2 },
-                    { q: "6 000 克 =", opts: ["6 公斤", "60 公斤", "600 公斤", "0.6 公斤"], a: 0 },
-                    { q: "7 000 g =", opts: ["70 kg", "7 kg", "700 kg", "0.7 kg"], a: 1 },
-                    { q: "3 公斤 450 克 =", opts: ["345 克", "3450 克", "3045 克", "34500 克"], a: 1 },
-                    { q: "4 200 g =", opts: ["4 kg 20 g", "4 kg 200 g", "42 kg 0 g", "4 kg 2 g"], a: 1 }
-                ]
-            },
-            {
-                name: "阶段 3：容量海洋 🧪",
-                badgeId: "badge3",
-                badgeName: "🧪 魔法炼金术士",
-                questions: [
-                    { q: "3 升 =", opts: ["30 毫升", "300 毫升", "3000 毫升", "30000 毫升"], a: 2 },
-                    { q: "6 l =", opts: ["60 ml", "600 ml", "6000 ml", "60000 ml"], a: 2 },
-                    { q: "4 000 毫升 =", opts: ["4 升", "40 升", "400 升", "0.4 升"], a: 0 },
-                    { q: "9 000 ml =", opts: ["90 l", "9 l", "900 l", "0.9 l"], a: 1 },
-                    { q: "1 升 560 毫升 =", opts: ["156 毫升", "1560 毫升", "1056 毫升", "15600 毫升"], a: 1 },
-                    { q: "7 580 ml =", opts: ["7 l 58 ml", "7 l 580 ml", "75 l 80 ml", "7 l 5800 ml"], a: 1 }
-                ]
-            }
-        ];
-
-        let currentStageIdx = 0;
-        let currentQuestionIdx = 0;
-        let score = 0;
-
-        const gameZone = document.getElementById('gameZone');
-        const stageBadge = document.getElementById('stageBadge');
-        const scoreText = document.getElementById('scoreText');
-        const progressBar = document.getElementById('progressBar');
-
-        function loadQuestion() {
-            const currentStage = stages[currentStageIdx];
-            const qData = currentStage.questions[currentQuestionIdx];
-
-            // 更新顶部信息与进度条
-            stageBadge.innerText = currentStage.name;
-            const totalQuestionsInStage = currentStage.questions.length;
-            const progress = ((currentQuestionIdx) / totalQuestionsInStage) * 100;
-            progressBar.style.width = `${progress}%`;
-
-            // 渲染问题卡片
-            gameZone.innerHTML = `
-                <div class="flex-1 flex flex-col justify-center items-center max-w-lg mx-auto w-full">
-                    <div class="bg-indigo-50/90 border-2 border-indigo-200 rounded-3xl p-6 w-full text-center shadow-md mb-6">
-                        <span class="text-xs font-bold text-indigo-500 bg-indigo-100 px-3 py-1 rounded-full mb-3 inline-block">
-                            第 ${currentQuestionIdx + 1} / ${totalQuestionsInStage} 题
-                        </span>
-                        <h3 class="text-xl md:text-3xl font-black text-slate-800">${qData.q} <span class="text-rose-500">?</span></h3>
-                    </div>
-
-                    <div id="optionsContainer" class="grid grid-cols-2 gap-3 md:gap-4 w-full"></div>
-                </div>
-            `;
-
-            const optionsContainer = document.getElementById('optionsContainer');
-            qData.opts.forEach((optText, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "card-pop bg-white border-2 border-amber-300 hover:border-amber-400 hover:bg-amber-50 py-3.5 px-4 rounded-2xl font-bold text-slate-700 text-sm md:text-base shadow-sm transition active:scale-95 flex items-center justify-center gap-2";
-                btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 text-xs flex items-center justify-center font-black">${String.fromCharCode(65 + idx)}</span>${optText}`;
-                btn.onclick = () => checkAnswer(idx);
-                optionsContainer.appendChild(btn);
-            });
+    setTimeout(() => {
+        currentIndex++;
+        if(currentIndex < questions.length) {
+            showQuestion();
+        } else {
+            endGame();
         }
+    }, 1800);
+}
 
-        function checkAnswer(selectedIdx) {
-            const currentStage = stages[currentStageIdx];
-            const qData = currentStage.questions[currentQuestionIdx];
+function endGame() {
+    Sound.win(); // 播放通关音效
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'block';
+    document.getElementById('final-score').innerText = `${score} / 100`;
 
-            if (selectedIdx === qData.a) {
-                Sound.correct();
-                score += 10;
-                scoreText.innerText = score;
-                currentQuestionIdx++;
+    let evalText = "";
+    if(score === 100) evalText = "🏆 满分！你是当之无愧的度量衡大师！";
+    else if(score >= 80) evalText = "🌟 非常优秀！再接再厉冲刺满分！";
+    else evalText = "💪 还在努力中，多复习一下换算公式再来挑战吧！";
+    
+    document.getElementById('evaluation').innerText = evalText;
+}
+</script>
 
-                if (currentQuestionIdx >= currentStage.questions.length) {
-                    // 完成一个阶段
-                    unlockBadge(currentStage.badgeId);
-                    showStageRewardModal();
-                } else {
-                    loadQuestion();
-                }
-            } else {
-                Sound.wrong();
-                alert("再想想看哦！记得进率是 1000（或 100）！");
-            }
-        }
-
-        function unlockBadge(badgeId) {
-            const b = document.getElementById(badgeId);
-            b.classList.remove('opacity-40');
-            b.classList.add('opacity-100', 'text-amber-600', 'scale-110');
-        }
-
-        function showStageRewardModal() {
-            Sound.win();
-            const modal = document.getElementById('rewardModal');
-            const title = document.getElementById('modalTitle');
-            const desc = document.getElementById('modalDesc');
-            const btn = document.getElementById('modalBtn');
-            const currentStage = stages[currentStageIdx];
-
-            if (currentStageIdx < stages.length - 1) {
-                title.innerText = "🎉 阶段通关！";
-                desc.innerText = `太棒了！你完成了【${currentStage.name}】，解锁了勋章【${currentStage.badgeName}】！`;
-                btn.innerText = "进入下一个阶段";
-                btn.onclick = () => {
-                    modal.classList.add('hidden');
-                    currentStageIdx++;
-                    currentQuestionIdx = 0;
-                    loadQuestion();
-                };
-            } else {
-                title.innerText = "🏆 终极大通关！";
-                desc.innerText = `恭喜你赢得了全部 3 个勋章！总得分：${score} 分！你已经是度量衡大大师啦！`;
-                btn.innerText = "重新开始挑战";
-                btn.onclick = () => {
-                    modal.classList.add('hidden');
-                    currentStageIdx = 0;
-                    currentQuestionIdx = 0;
-                    score = 0;
-                    scoreText.innerText = 0;
-                    loadQuestion();
-                };
-            }
-            modal.classList.remove('hidden');
-        }
-
-        // 启动游戏
-        loadQuestion();
-    </script>
 </body>
 </html>
