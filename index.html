@@ -3,130 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>度量衡大冒险 ⚖️🧪</title>
+    <title>度量衡大冒险：12关终极挑战 ⚖️</title>
     <style>
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             min-height: 100vh;
+            margin: 0;
+            padding: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0;
             color: #333;
         }
-        .game-card {
-            background: white;
-            padding: 30px;
+        .container {
+            background: #ffffff;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 90%;
-            max-width: 500px;
+            width: 100%;
+            max-width: 700px;
+            padding: 25px;
             text-align: center;
         }
-        .progress-bar {
-            background: #eee;
-            height: 12px;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 20px;
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0f4f8;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
         }
-        .progress {
-            background: #4CAF50;
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .question-box {
+        .score { color: #ff9800; font-size: 1.3rem; }
+        .question-card {
+            background: #f8f9fa;
+            border-left: 6px solid #4facfe;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
             font-size: 1.2rem;
             font-weight: bold;
-            margin: 20px 0;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 5px solid #6e8efb;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .input-box {
+            margin: 15px 0;
+            font-size: 1.1rem;
         }
         input[type="number"] {
-            width: 80px;
+            width: 90px;
             padding: 8px;
             font-size: 1.1rem;
             text-align: center;
-            border: 2px solid #ccc;
+            border: 2px solid #4facfe;
             border-radius: 8px;
             margin: 0 5px;
         }
-        button {
-            background: #6e8efb;
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .option-btn {
+            background: #ffffff;
+            border: 2px solid #4facfe;
+            color: #333;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .option-btn:hover { background: #e6f4ff; }
+        
+        /* 算草画板样式 */
+        .scratchpad-container {
+            border: 2px dashed #bbb;
+            border-radius: 12px;
+            background: #fff;
+            margin-top: 15px;
+            padding: 8px;
+            position: relative;
+        }
+        .scratchpad-title {
+            font-size: 0.9rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            touch-action: none;
+            cursor: crosshair;
+            width: 100%;
+            height: 150px;
+        }
+        
+        .btn {
+            background: #4facfe;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
+            padding: 12px 30px;
+            font-size: 1.1rem;
             border-radius: 25px;
             cursor: pointer;
+            font-weight: bold;
             transition: 0.2s;
-            margin-top: 15px;
+            margin-top: 10px;
         }
-        button:hover {
-            background: #5a7bef;
-            transform: scale(1.05);
+        .btn:hover { background: #00c6ff; transform: scale(1.03); }
+        .btn-clear {
+            background: #ff5252;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 6px;
         }
+        
         .feedback {
+            font-weight: bold;
             font-size: 1.1rem;
-            font-weight: bold;
-            margin-top: 15px;
-            height: 30px;
-        }
-        .score-board {
-            font-size: 1.5rem;
-            color: #ff9800;
-            font-weight: bold;
+            margin-top: 10px;
+            height: 25px;
         }
     </style>
 </head>
 <body>
 
-<div class="game-card">
+<div class="container">
+    <!-- 开始界面 -->
     <div id="start-screen">
         <h1>⚖️ 度量衡大冒险 🧪</h1>
-        <p>准备好挑战两张工作表里的 18 道难题了吗？</p>
-        <p>目标分数：<b>100 分</b> 🌟</p>
-        <button onclick="startGame()">开始挑战 🚀</button>
+        <p>12 道精选挑战题（包含乘除计算与应用题）</p>
+        <p>支持屏幕手写算草 ✍️ | 满分：<b>100 分</b> 🌟</p>
+        <button class="btn" onclick="startGame()">开始挑战 🚀</button>
     </div>
 
+    <!-- 游戏界面 -->
     <div id="game-screen" style="display: none;">
-        <div class="progress-bar"><div class="progress" id="progress"></div></div>
-        <div style="display: flex; justify-content: space-between; font-weight: bold;">
-            <span id="q-num">第 1/18 题</span>
-            <span class="score-board">得分: <span id="score">0</span></span>
+        <div class="header-bar">
+            <span id="q-progress">第 1 / 12 题</span>
+            <span class="score">得分: <span id="score-text">0</span></span>
         </div>
-        
-        <div class="question-box" id="question">题目加载中...</div>
-        <div id="input-area"></div>
-        
-        <button onclick="submitAnswer()" id="submit-btn">提交答案 ✏️</button>
+
+        <div class="question-card" id="question-text">题目加载中...</div>
+
+        <!-- 答题区域：填空或单选 -->
+        <div id="answer-area"></div>
+
+        <!-- 算草画板 -->
+        <div class="scratchpad-container">
+            <div class="scratchpad-title">
+                <span>📝 算草板 (可以手写计算过程)</span>
+                <button class="btn btn-clear" onclick="clearCanvas()">清空算草</button>
+            </div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <button class="btn" id="submit-btn" onclick="checkAnswer()">提交答案 ✏️</button>
         <div class="feedback" id="feedback"></div>
     </div>
 
+    <!-- 结算界面 -->
     <div id="end-screen" style="display: none;">
         <h1>🎉 挑战完成！</h1>
-        <p>你的最终得分是：</p>
-        <div class="score-board" style="font-size: 3rem;" id="final-score">0 / 100</div>
-        <p id="evaluation"></p>
-        <button onclick="location.reload()">再玩一次 🔄</button>
+        <p>你的最终成绩：</p>
+        <div class="score" style="font-size: 3.5rem; margin: 15px 0;" id="final-score">0 / 100</div>
+        <p id="eval-text"></p>
+        <button class="btn" onclick="location.reload()">再玩一次 🔄</button>
     </div>
 </div>
 
 <script>
 // 音效系统 (Web Audio API)
 let audioCtx = null;
-
 function getAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     return audioCtx;
 }
 
@@ -137,8 +199,8 @@ const Sound = {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, now); // C5
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
         osc.connect(gain);
@@ -152,8 +214,8 @@ const Sound = {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, now); // A3
-        osc.frequency.linearRampToValueAtTime(130, now + 0.2); // C3
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(130, now + 0.2);
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
         osc.connect(gain);
@@ -163,8 +225,7 @@ const Sound = {
     },
     win() {
         const ctx = getAudioContext();
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-        notes.forEach((freq, idx) => {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
             const now = ctx.currentTime + idx * 0.1;
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -180,108 +241,223 @@ const Sound = {
     }
 };
 
+// 12 道题目（配分总共 100 分）
 const questions = [
-    // 质量换算 (图1 Section 六)
-    { q: "7 kg = ____ g", inputs: 1, labels: ["g"], ans: [7000], pts: 5 },
-    { q: "12 kg = ____ g", inputs: 1, labels: ["g"], ans: [12000], pts: 5 },
-    { q: "10 000 g = ____ kg", inputs: 1, labels: ["kg"], ans: [10], pts: 5 },
-    { q: "2 000 g = ____ kg", inputs: 1, labels: ["kg"], ans: [2], pts: 5 },
-    { q: "8 kg 80 g = ____ g", inputs: 1, labels: ["g"], ans: [8080], pts: 5 },
-    { q: "4 640 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [4, 640], pts: 5 },
-    
-    // 质量加减法 (图1 Section 七 & 八)
-    { q: "35 kg + 25 kg = ____ kg", inputs: 1, labels: ["kg"], ans: [60], pts: 5 },
-    { q: "1 kg 80 g + 3 kg 560 g + 4 kg 725 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [9, 365], pts: 6 },
-    { q: "7 kg 85 g - 2 kg 500 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [4, 585], pts: 6 },
-    { q: "15 kg 780 g - 6 kg 420 g - 5 kg 300 g = ____ kg ____ g", inputs: 2, labels: ["kg", "g"], ans: [4, 60], pts: 6 },
+    // 图1 计算题 (每题8分)
+    { type: 'fill', q: '1. 6 × 35 l = ____ l', inputs: ['l'], ans: [210], pts: 8 },
+    { type: 'fill', q: '2. 9 × 26 升 50 毫升 = ____ 升 ____ 毫升', inputs: ['升', '毫升'], ans: [234, 450], pts: 8 },
+    { type: 'fill', q: '3. 4 × 2 l 231 ml = ____ l ____ ml', inputs: ['l', 'ml'], ans: [8, 924], pts: 8 },
+    { type: 'fill', q: '4. 264 毫升 ÷ 3 = ____ 毫升', inputs: ['毫升'], ans: [88], pts: 8 },
+    { type: 'fill', q: '5. 790 ml ÷ [ ? ] = 158 ml<br>请算出 [ ? ] 的数值：', inputs: [''], ans: [5], pts: 8 },
+    { type: 'fill', q: '6. 6 l 200 ml ÷ 5 = ____ l ____ ml', inputs: ['l', 'ml'], ans: [1, 240], pts: 8 },
 
-    // 容量换算 (图2 Section G)
-    { q: "8 升 = ____ 毫升", inputs: 1, labels: ["毫升"], ans: [8000], pts: 5 },
-    { q: "4 000 毫升 = ____ 升", inputs: 1, labels: ["升"], ans: [4], pts: 5 },
-    { q: "7 880 ml = ____ l ____ ml", inputs: 2, labels: ["l", "ml"], ans: [7, 880], pts: 5 },
-    { q: "9 l 10 ml = ____ ml", inputs: 1, labels: ["ml"], ans: [9010], pts: 5 },
-
-    // 容量加减法 (图2 Section H)
-    { q: "6 升 28 毫升 + 3 升 72 毫升 = ____ 升 ____ 毫升", inputs: 2, labels: ["升", "毫升"], ans: [9, 100], pts: 6 },
-    { q: "555 ml + 66 ml + 465 ml = ____ l ____ ml", inputs: 2, labels: ["l", "ml"], ans: [1, 86], pts: 6 },
-    { q: "20 l 320 ml - 15 l 535 ml = ____ l ____ ml", inputs: 2, labels: ["l", "ml"], ans: [4, 785], pts: 6 },
-    { q: "758 ml - [ ? ] ml - 28 ml = 425 ml<br>请算出 [ ? ] 里的数值：", inputs: 1, labels: ["ml"], ans: [305], pts: 7 }
+    // 图2 选择题 (每题8分，最后两题每题10分)
+    { 
+        type: 'choice', 
+        q: '7. 白板的长度是 250 厘米，是宽度的 2 倍。白板的宽度是多少厘米？', 
+        opts: ['A. 100', 'B. 125', 'C. 375', 'D. 500'], 
+        ans: 1, 
+        pts: 8 
+    },
+    { 
+        type: 'choice', 
+        q: '8. 妈妈煮了 2 l 100 ml 的凉茶，盛入每瓶 200 ml 的瓶子里。需要准备多少个瓶子才可以盛完？', 
+        opts: ['A. 8', 'B. 9', 'C. 10', 'D. 11'], 
+        ans: 3, 
+        pts: 8 
+    },
+    { 
+        type: 'choice', 
+        q: '9. 爸爸买了一根长 10 m 的麻绳，平均剪成 4 段。计算每段麻绳的长度。', 
+        opts: ['A. 250 m', 'B. 200 m', 'C. 250 cm', 'D. 200 cm'], 
+        ans: 2, 
+        pts: 8 
+    },
+    { 
+        type: 'choice', 
+        q: '10. 一袋白糖 350 g，一袋面粉 250 g。佩芬买了 2 袋白糖和 2 袋面粉，共重多少 kg 和 g？', 
+        opts: ['A. 1 kg 100 g', 'B. 1 kg 150 g', 'C. 1 kg 200 g', 'D. 2 kg 400 g'], 
+        ans: 2, 
+        pts: 8 
+    },
+    { 
+        type: 'choice', 
+        q: '11. 妈妈买了一瓶橙汁。美珍和 2 名弟弟各喝了 300 ml 后，还剩下 1 l 600 ml。计算这瓶橙汁原本的体积。', 
+        opts: ['A. 2 l 200 ml', 'B. 2 l 500 ml', 'C. 3 l 800 ml', 'D. 5 l 700 ml'], 
+        ans: 1, 
+        pts: 10 
+    },
+    { 
+        type: 'choice', 
+        q: '12. 黄老师买了一卷长 5 m 的彩带。她用了 50 cm 系礼物和 75 cm 系花束。计算剩下的彩带长度。', 
+        opts: ['A. 1 m 75 cm', 'B. 2 m 50 cm', 'C. 3 m 75 cm', 'D. 4 m 50 cm'], 
+        ans: 2, 
+        pts: 10 
+    }
 ];
 
-let currentIndex = 0;
+let curIndex = 0;
 let score = 0;
+let selectedChoice = -1;
 
 function startGame() {
-    getAudioContext(); // 初始化音频
+    getAudioContext();
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('game-screen').style.display = 'block';
-    showQuestion();
+    initCanvas();
+    loadQuestion();
 }
 
-function showQuestion() {
-    const q = questions[currentIndex];
-    document.getElementById('q-num').innerText = `第 ${currentIndex + 1}/${questions.length} 题`;
-    document.getElementById('progress').style.width = `${((currentIndex) / questions.length) * 100}%`;
-    document.getElementById('question').innerHTML = q.q;
+function loadQuestion() {
+    selectedChoice = -1;
+    clearCanvas();
+    const q = questions[curIndex];
+    document.getElementById('q-progress').innerText = `第 ${curIndex + 1} / ${questions.length} 题`;
+    document.getElementById('question-text').innerHTML = q.q;
     document.getElementById('feedback').innerText = '';
-    
-    let inputHtml = '';
-    for(let i = 0; i < q.inputs; i++) {
-        inputHtml += `<input type="number" id="ans${i}"> ${q.labels[i]} `;
-    }
-    document.getElementById('input-area').innerHTML = inputHtml;
     document.getElementById('submit-btn').disabled = false;
+
+    const area = document.getElementById('answer-area');
+    area.innerHTML = '';
+
+    if (q.type === 'fill') {
+        let html = '<div class="input-box">';
+        q.inputs.forEach((unit, idx) => {
+            html += `<input type="number" id="inp${idx}"> ${unit} `;
+        });
+        html += '</div>';
+        area.innerHTML = html;
+    } else {
+        let html = '<div class="options-grid">';
+        q.opts.forEach((opt, idx) => {
+            html += `<button class="option-btn" id="opt${idx}" onclick="selectOpt(${idx})">${opt}</button>`;
+        });
+        html += '</div>';
+        area.innerHTML = html;
+    }
 }
 
-function submitAnswer() {
-    const q = questions[currentIndex];
-    let correct = true;
-
-    for(let i = 0; i < q.inputs; i++) {
-        const userAns = parseInt(document.getElementById(`ans${i}`).value);
-        if(userAns !== q.ans[i]) {
-            correct = false;
-            break;
+function selectOpt(idx) {
+    selectedChoice = idx;
+    const q = questions[curIndex];
+    for (let i = 0; i < q.opts.length; i++) {
+        const btn = document.getElementById(`opt${i}`);
+        if (i === idx) {
+            btn.style.background = '#4facfe';
+            btn.style.color = '#fff';
+        } else {
+            btn.style.background = '#fff';
+            btn.style.color = '#333';
         }
     }
+}
 
-    const feedbackEl = document.getElementById('feedback');
+function checkAnswer() {
+    const q = questions[curIndex];
+    let correct = true;
+
+    if (q.type === 'fill') {
+        for (let i = 0; i < q.ans.length; i++) {
+            const val = parseInt(document.getElementById(`inp${i}`).value);
+            if (val !== q.ans[i]) {
+                correct = false;
+                break;
+            }
+        }
+    } else {
+        if (selectedChoice !== q.ans) correct = false;
+    }
+
+    const fb = document.getElementById('feedback');
     document.getElementById('submit-btn').disabled = true;
 
-    if(correct) {
-        Sound.correct(); // 播放答对音效
+    if (correct) {
+        Sound.correct();
         score += q.pts;
-        document.getElementById('score').innerText = score;
-        feedbackEl.style.color = '#4CAF50';
-        feedbackEl.innerText = `✅ 太棒了！答对了 (+${q.pts}分)`;
+        document.getElementById('score-text').innerText = score;
+        fb.style.color = '#4CAF50';
+        fb.innerText = `✅ 回答正确！(+${q.pts}分)`;
     } else {
-        Sound.wrong(); // 播放答错音效
-        feedbackEl.style.color = '#f44336';
-        feedbackEl.innerText = `❌ 答错了，正确答案是: ${q.ans.join(' , ')}`;
+        Sound.wrong();
+        fb.style.color = '#f44336';
+        let ansStr = q.type === 'fill' ? q.ans.join(' , ') : q.opts[q.ans];
+        fb.innerText = `❌ 答错了，正确答案是: ${ansStr}`;
     }
 
     setTimeout(() => {
-        currentIndex++;
-        if(currentIndex < questions.length) {
-            showQuestion();
+        curIndex++;
+        if (curIndex < questions.length) {
+            loadQuestion();
         } else {
             endGame();
         }
-    }, 1800);
+    }, 2000);
 }
 
 function endGame() {
-    Sound.win(); // 播放通关音效
+    Sound.win();
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('end-screen').style.display = 'block';
     document.getElementById('final-score').innerText = `${score} / 100`;
 
-    let evalText = "";
-    if(score === 100) evalText = "🏆 满分！你是当之无愧的度量衡大师！";
-    else if(score >= 80) evalText = "🌟 非常优秀！再接再厉冲刺满分！";
-    else evalText = "💪 还在努力中，多复习一下换算公式再来挑战吧！";
+    let txt = "";
+    if (score === 100) txt = "🏆 满分！太厉害了，你是真正的计算大王！";
+    else if (score >= 80) txt = "🌟 非常棒！大部分计算与应用题都做对了！";
+    else txt = "💪 加油！在算草板上多演练几遍，下次一定能拿高分！";
+    document.getElementById('eval-text').innerText = txt;
+}
+
+// 算草板逻辑
+let canvas, ctx, drawing = false;
+
+function initCanvas() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
     
-    document.getElementById('evaluation').innerText = evalText;
+    // 调整 canvas 实际分辨率
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#333';
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function startDraw(e) {
+        drawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    }
+
+    function moveDraw(e) {
+        if (!drawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
+
+    function stopDraw() { drawing = false; }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', moveDraw);
+    canvas.addEventListener('mouseup', stopDraw);
+
+    canvas.addEventListener('touchstart', (e) => { startDraw(e); e.preventDefault(); });
+    canvas.addEventListener('touchmove', (e) => { moveDraw(e); e.preventDefault(); });
+    canvas.addEventListener('touchend', stopDraw);
+}
+
+function clearCanvas() {
+    if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 }
 </script>
 
