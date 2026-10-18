@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧗‍♂️ 4年级数学：数学登山乐 🏔️</title>
+    <style>
+        :root {
+            --bg-color: #f0f9ff;
+            --card-bg: #ffffff;
+            --primary-color: #0284c7;
+            --primary-dark: #0369a1;
+            --accent-color: #f59e0b;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .game-container {
+            background-color: var(--card-bg);
+            border: 4px solid var(--primary-color);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 950px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mountain-tracker {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-bar-bg {
+            background: #cbd5e1;
+            border-radius: 10px;
+            flex-grow: 1;
+            height: 16px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #38bdf8, #0284c7);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 双栏并排布局 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 700px) {
+            .main-layout {
+                grid-template-columns: 1.1fr 0.9fr;
+            }
+        }
+
+        .question-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .question-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .btn-opt {
+            background-color: #ffffff;
+            border: 2px solid #0284c7;
+            color: #0284c7;
+            padding: 10px 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .btn-opt:hover {
+            background-color: #0284c7;
+            color: #ffffff;
+        }
+
+        /* 电子小白板样式 */
+        .scratch-pad {
+            background: #ffffff;
+            border: 3px solid #b2dfdb;
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .canvas-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .tool-btn {
+            background: #e0f2f1;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            color: #004d40;
+        }
+
+        .tool-btn.active {
+            background: #00897b;
+            color: #fff;
+        }
+
+        canvas {
+            border: 2px dashed #b2dfdb;
+            border-radius: 10px;
+            background-color: #fafafa;
+            cursor: crosshair;
+            touch-action: none;
+            width: 100%;
+            max-width: 350px;
+            height: 280px;
+        }
+
+        .feedback {
+            font-size: 16px;
+            font-weight: bold;
+            height: 25px;
+            margin-top: 8px;
+        }
+
+        .correct { color: #16a34a; }
+        .wrong { color: #dc2626; }
+        .hidden { display: none !important; }
+
+        .finish-card {
+            padding: 30px;
+        }
+
+        .btn-reset {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="header">
+        <h2 style="margin:0; color:var(--primary-dark);">🏔️ 数学登山乐</h2>
+        <div style="font-weight:bold; font-size:16px;">高度：<span id="height-count">0</span> / 22 米 🧗‍♂️</div>
+    </div>
+
+    <!-- 登山进度条 -->
+    <div class="mountain-tracker">
+        <span>🧗 起点</span>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <span>🏆 山顶</span>
+    </div>
+
+    <div id="game-body">
+        <div class="main-layout">
+            <!-- 左侧：题目与选项 -->
+            <div class="question-section">
+                <div class="question-card" id="question-text">题目加载中...</div>
+                <div class="options-grid" id="options-container"></div>
+                <div class="feedback" id="feedback-msg"></div>
+            </div>
+
+            <!-- 右侧：专属小白板 -->
+            <div class="scratch-pad">
+                <div class="canvas-tools">
+                    <button class="tool-btn active" id="pen-btn" onclick="setTool('pen')">✏️ 画笔</button>
+                    <button class="tool-btn" id="eraser-btn" onclick="setTool('eraser')">🧹 橡皮</button>
+                    <button class="tool-btn" onclick="clearCanvas()">🗑️ 清空草稿</button>
+                </div>
+                <canvas id="paintCanvas" width="350" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登顶胜利界面 -->
+    <div id="finish-screen" class="finish-card hidden">
+        <h1>🎉 恭喜登顶！ 🏆</h1>
+        <p style="font-size:18px;">你成功解答了全部 22 道关卡，登上了数学之巅！🌟</p>
+        <button class="btn-reset" onclick="location.reload()">重新登山 🏔️</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        { q: "1. 哪项数目不是奇数？", options: ["A. 5", "B. 8", "C. 9", "D. 11"], ans: 1 },
+        { q: "2. 把五万八千零七十二写成数字是：", options: ["A. 58 072", "B. 58 702", "C. 58 720", "D. 58 027"], ans: 0 },
+        { q: "3. 哪个数目的值最大？", options: ["A. 8 102", "B. 18 120", "C. 18 210", "D. 18 201"], ans: 2 },
+        { q: "4. 82 107 写成分析式是：", options: ["A. 82 000 + 100 + 7", "B. 82 000 + 107", "C. 80 000 + 2 000 + 107", "D. 80 000 + 2 000 + 100 + 7"], ans: 3 },
+        { q: "5. 写出数字 9 在 50 902 中的数位和数值：", options: ["A. 万位 | 90 000", "B. 千位 | 9 000", "C. 百位 | 900", "D. 十位 | 90"], ans: 2 },
+        { q: "6. 瓶子 X（小）装有 10 000 颗糖果，估计瓶子 Y（大，满瓶）里糖果的数量：", options: ["A. 10 000", "B. 20 000", "C. 30 000", "D. 40 000"], ans: 3 },
+        { q: "7. 下列数列中，字母 H 代表哪个数目？<br>68 281, 69 281, H, 71 281, 72 281", options: ["A. 69 282", "B. 70 281", "C. 71 280", "D. 71 820"], ans: 1 },
+        { q: "8. Q 的千位近似值是 46 000。哪个数目是 Q？", options: ["A. 45 455", "B. 45 582", "C. 46 519", "D. 47 101"], ans: 1 },
+        { q: "9. 哪组数目是顺序的数列规律（从小到大）？", options: ["A. 62 851, 62 581, 62 185, 62 518", "B. 62 581, 62 185, 62 851, 62 518", "C. 62 518, 62 185, 62 581, 62 851", "D. 62 185, 62 518, 62 581, 62 851"], ans: 3 },
+        { q: "10. 有关数目 76 913 的说明，哪项是正确的？", options: ["A. 数字 9 的数位是千位", "B. 数字 6 的数值是 600", "C. 该数目的千位近似值是 80 000", "D. 该数目的万位近似值是 80 000"], ans: 3 },
+        { q: "11. 把 9、8、3 和 7 排成最小的四位数，然后乘 15：", options: ["A. 13 945", "B. 18 945", "C. 48 095", "D. 56 835"], ans: 3 },
+        { q: "12. 26 827 + 1 927 =", options: ["A. 24 900", "B. 24 906", "C. 28 747", "D. 28 754"], ans: 3 },
+        { q: "13. 子浩有 b 颗弹珠，莉莉给子浩 6 颗后共有 17 颗。找出 b 的值：", options: ["A. 11", "B. 12", "C. 23", "D. 24"], ans: 0 },
+        { q: "14. 下图显示一条数目线。计算 A (15 877) 与 B (15 892) 的和：", options: ["A. 31 754", "B. 31 757", "C. 31 769", "D. 31 796"], ans: 2 },
+        { q: "15. 小簿子 17 281 本，A4 簿子比小簿子多 8 717 本。计算 A4 簿子的数量：", options: ["A. 8 564", "B. 8 717", "C. 25 998", "D. 34 715"], ans: 2 },
+        { q: "16. 用 4, 7, 0, 2, 6 组成最大五位数(76 420)和最小三位数(204)，找出两数之差：", options: ["A. 20 467", "B. 76 216", "C. 76 420", "D. 96 887"], ans: 1 },
+        { q: "17. 14 天里卖了 55 650 杯雪糕，平均一天卖多少杯？", options: ["A. 3 975", "B. 5 664", "C. 55 664", "D. 79 100"], ans: 0 },
+        { q: "18. 果园有 18 721 棵榴莲树和 21 938 棵芒果树，暴风雨摧毁了 876 棵，还剩多少棵？", options: ["A. 2 341", "B. 39 783", "C. 40 659", "D. 41 535"], ans: 1 },
+        { q: "19. 红色销量 15 672，蓝色比红色少 973，黑色比蓝色多 8 370。计算黑色销量：", options: ["A. 6 329", "B. 8 275", "C. 13 862", "D. 23 069"], ans: 3 },
+        { q: "20. 840 本书包装成 35 套，4M 班领走了 22 套。4M 班一共领取了多少本书？", options: ["A. 528", "B. 783", "C. 1683", "D. 1336"], ans: 0 },
+        { q: "21. 红豆装进 8 个瓶子（每瓶 1025 颗）还剩 2 颗。计算一包红豆的总数量：", options: ["A. 1035", "B. 1041", "C. 8 202", "D. 16 400"], ans: 2 },
+        { q: "22. 三个数目的和是 10 008：98 + 2 001 + C = 10 008。C 代表什么数目？", options: ["A. 2 099", "B. 7 909", "C. 8 105", "D. 12 107"], ans: 1 }
+    ];
+
+    let currentStep = 0;
+
+    function renderQuestion() {
+        const item = quizData[currentStep];
+        document.getElementById('question-text').innerHTML = item.q;
+        document.getElementById('height-count').innerText = currentStep;
+
+        const percent = (currentStep / quizData.length) * 100;
+        document.getElementById('progress-fill').style.width = percent + '%';
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        item.options.forEach((optText, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-opt';
+            btn.innerText = optText;
+            btn.onclick = () => selectOption(index);
+            container.appendChild(btn);
+        });
+
+        document.getElementById('feedback-msg').innerText = '';
+        clearCanvas(); // 切换题目时自动重置小白板草稿
+    }
+
+    function selectOption(index) {
+        const item = quizData[currentStep];
+        const fb = document.getElementById('feedback-msg');
+
+        if (index === item.ans) {
+            fb.innerText = "✨ 答对了！往上爬了一步 🧗‍♂️";
+            fb.className = "feedback correct";
+            setTimeout(() => {
+                currentStep++;
+                if (currentStep < quizData.length) {
+                    renderQuestion();
+                } else {
+                    document.getElementById('progress-fill').style.width = '100%';
+                    document.getElementById('height-count').innerText = '22';
+                    document.getElementById('game-body').classList.add('hidden');
+                    document.getElementById('finish-screen').classList.remove('hidden');
+                }
+            }, 1000);
+        } else {
+            fb.innerText = "❌ 答错了，留在原地，再试一次！";
+            fb.className = "feedback wrong";
+        }
+    }
+
+    // --- 电子小白板画板逻辑 ---
+    const canvas = document.getElementById('paintCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let currentTool = 'pen';
+
+    function startDrawing(e) {
+        isDrawing = true;
+        draw(e);
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const x = (clientX - rect.left) * (canvas.width / rect.width);
+        const y = (clientY - rect.top) * (canvas.height / rect.height);
+
+        ctx.lineWidth = currentTool === 'eraser' ? 16 : 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = currentTool === 'eraser' ? '#fafafa' : '#1e293b';
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    function setTool(tool) {
+        currentTool = tool;
+        document.getElementById('pen-btn').classList.toggle('active', tool === 'pen');
+        document.getElementById('eraser-btn').classList.toggle('active', tool === 'eraser');
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchmove', draw);
+
+    renderQuestion();
+</script>
+</body>
+</html>
