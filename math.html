@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧗‍♂️ 4年级数学：数学登山乐 🏔️</title>
+    <title>🧗‍♀️ 4年级数学：数学登山乐 🏔️</title>
     <style>
         :root {
             --bg-color: #f0f9ff;
@@ -46,33 +46,27 @@
             margin-bottom: 15px;
         }
 
-        .mountain-tracker {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 10px;
+        /* 登山动画 Canvas 容器 */
+        .mountain-canvas-box {
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+            border-radius: 16px;
+            border: 2px solid #0284c7;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .progress-bar-bg {
-            background: #cbd5e1;
-            border-radius: 10px;
-            flex-grow: 1;
-            height: 16px;
-            margin: 0 15px;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .progress-bar-fill {
-            background: linear-gradient(90deg, #38bdf8, #0284c7);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
+        #mountainCanvas {
+            width: 100%;
+            max-width: 850px;
+            height: 180px;
+            display: block;
         }
 
-        /* 双栏并排布局 */
+        /* 双栏布局 */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr;
@@ -130,7 +124,7 @@
             color: #ffffff;
         }
 
-        /* 电子小白板样式 */
+        /* 小白板样式 */
         .scratch-pad {
             background: #ffffff;
             border: 3px solid #b2dfdb;
@@ -163,7 +157,7 @@
             color: #fff;
         }
 
-        canvas {
+        #paintCanvas {
             border: 2px dashed #b2dfdb;
             border-radius: 10px;
             background-color: #fafafa;
@@ -171,7 +165,7 @@
             touch-action: none;
             width: 100%;
             max-width: 350px;
-            height: 280px;
+            height: 260px;
         }
 
         .feedback {
@@ -207,16 +201,12 @@
 <div class="game-container">
     <div class="header">
         <h2 style="margin:0; color:var(--primary-dark);">🏔️ 数学登山乐</h2>
-        <div style="font-weight:bold; font-size:16px;">高度：<span id="height-count">0</span> / 22 米 🧗‍♂️</div>
+        <div style="font-weight:bold; font-size:16px;">攀登高度：<span id="height-count">0</span> / 22 米 🧗‍♀️</div>
     </div>
 
-    <!-- 登山进度条 -->
-    <div class="mountain-tracker">
-        <span>🧗 起点</span>
-        <div class="progress-bar-bg">
-            <div class="progress-bar-fill" id="progress-fill"></div>
-        </div>
-        <span>🏆 山顶</span>
+    <!-- 动态雪山与小女孩画板 -->
+    <div class="mountain-canvas-box">
+        <canvas id="mountainCanvas" width="800" height="180"></canvas>
     </div>
 
     <div id="game-body">
@@ -228,22 +218,22 @@
                 <div class="feedback" id="feedback-msg"></div>
             </div>
 
-            <!-- 右侧：专属小白板 -->
+            <!-- 右侧：小白板草稿纸 -->
             <div class="scratch-pad">
                 <div class="canvas-tools">
                     <button class="tool-btn active" id="pen-btn" onclick="setTool('pen')">✏️ 画笔</button>
                     <button class="tool-btn" id="eraser-btn" onclick="setTool('eraser')">🧹 橡皮</button>
                     <button class="tool-btn" onclick="clearCanvas()">🗑️ 清空草稿</button>
                 </div>
-                <canvas id="paintCanvas" width="350" height="280"></canvas>
+                <canvas id="paintCanvas" width="350" height="260"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- 登顶胜利界面 -->
+    <!-- 登顶界面 -->
     <div id="finish-screen" class="finish-card hidden">
         <h1>🎉 恭喜登顶！ 🏆</h1>
-        <p style="font-size:18px;">你成功解答了全部 22 道关卡，登上了数学之巅！🌟</p>
+        <p style="font-size:18px;">小女孩成功攀登到了雪山顶峰，太棒啦！🌟</p>
         <button class="btn-reset" onclick="location.reload()">重新登山 🏔️</button>
     </div>
 </div>
@@ -276,13 +266,144 @@
 
     let currentStep = 0;
 
+    // --- 雪山动画引擎 (Canvas) ---
+    const mCanvas = document.getElementById('mountainCanvas');
+    const mCtx = mCanvas.getContext('2d');
+
+    // 22 步登山坐标（从山脚到山顶）
+    const pathPoints = [];
+    const totalSteps = 22;
+
+    function initMountainPath() {
+        pathPoints.length = 0;
+        const startX = 60, startY = 150;
+        const topX = 400, topY = 35;
+        for (let i = 0; i <= totalSteps; i++) {
+            const ratio = i / totalSteps;
+            const x = startX + (topX - startX) * ratio;
+            const y = startY + (topY - startY) * ratio;
+            pathPoints.push({ x, y });
+        }
+    }
+
+    let girlPos = { step: 0, hopY: 0 };
+    let isHopping = false;
+
+    function drawMountainScene() {
+        mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
+
+        // 1. 画背景雪山
+        mCtx.beginPath();
+        mCtx.moveTo(30, 160);
+        mCtx.lineTo(400, 30);
+        mCtx.lineTo(770, 160);
+        mCtx.fillStyle = '#64748b';
+        mCtx.fill();
+
+        // 积雪山顶
+        mCtx.beginPath();
+        mCtx.moveTo(400, 30);
+        mCtx.lineTo(330, 70);
+        mCtx.lineTo(370, 65);
+        mCtx.lineTo(400, 75);
+        mCtx.lineTo(430, 65);
+        mCtx.lineTo(470, 70);
+        mCtx.fillStyle = '#ffffff';
+        mCtx.fill();
+
+        // 2. 绘制登山路径阶梯
+        mCtx.beginPath();
+        mCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        mCtx.lineWidth = 3;
+        mCtx.setLineDash([5, 5]);
+        mCtx.moveTo(pathPoints[0].x, pathPoints[0].y);
+        for (let i = 1; i < pathPoints.length; i++) {
+            mCtx.lineTo(pathPoints[i].x, pathPoints[i].y);
+        }
+        mCtx.stroke();
+        mCtx.setLineDash([]); // 恢复虚线
+
+        // 终点红旗
+        const top = pathPoints[totalSteps];
+        mCtx.fillStyle = '#ef4444';
+        mCtx.beginPath();
+        mCtx.moveTo(top.x, top.y - 25);
+        mCtx.lineTo(top.x + 18, top.y - 18);
+        mCtx.lineTo(top.x, top.y - 11);
+        mCtx.fill();
+        mCtx.strokeStyle = '#334155';
+        mCtx.lineWidth = 2;
+        mCtx.beginPath();
+        mCtx.moveTo(top.x, top.y);
+        mCtx.lineTo(top.x, top.y - 25);
+        mCtx.stroke();
+
+        // 3. 绘制登山小女孩 🧗‍♀️
+        const currentPt = pathPoints[girlPos.step];
+        const renderX = currentPt.x;
+        const renderY = currentPt.y - girlPos.hopY;
+
+        // 小女孩（头、双马尾、身体、背包）
+        mCtx.fillStyle = '#f59e0b'; // 头发/双马尾
+        mCtx.beginPath();
+        mCtx.arc(renderX - 8, renderY - 22, 4, 0, Math.PI * 2);
+        mCtx.arc(renderX + 8, renderY - 22, 4, 0, Math.PI * 2);
+        mCtx.fill();
+
+        mCtx.fillStyle = '#fde047'; // 脸部
+        mCtx.beginPath();
+        mCtx.arc(renderX, renderY - 20, 8, 0, Math.PI * 2);
+        mCtx.fill();
+
+        mCtx.fillStyle = '#ec4899'; // 粉色衣服
+        mCtx.beginPath();
+        mCtx.arc(renderX, renderY - 8, 7, 0, Math.PI * 2);
+        mCtx.fill();
+
+        mCtx.fillStyle = '#0284c7'; // 登山背包
+        mCtx.fillRect(renderX - 11, renderY - 14, 5, 10);
+    }
+
+    // 方案 B：连续跃动跳跃向上爬升
+    function animateHop(targetStep, onComplete) {
+        if (girlPos.step >= targetStep) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        let frame = 0;
+        const totalFrames = 12;
+        isHopping = true;
+
+        function stepAnim() {
+            frame++;
+            // 抛物线跳跃弧度
+            girlPos.hopY = Math.sin((frame / totalFrames) * Math.PI) * 14;
+
+            if (frame >= totalFrames) {
+                girlPos.step++;
+                girlPos.hopY = 0;
+                drawMountainScene();
+                if (girlPos.step < targetStep) {
+                    frame = 0;
+                    requestAnimationFrame(stepAnim);
+                } else {
+                    isHopping = false;
+                    if (onComplete) onComplete();
+                }
+            } else {
+                drawMountainScene();
+                requestAnimationFrame(stepAnim);
+            }
+        }
+        requestAnimationFrame(stepAnim);
+    }
+
+    // --- 游戏逻辑 ---
     function renderQuestion() {
         const item = quizData[currentStep];
         document.getElementById('question-text').innerHTML = item.q;
         document.getElementById('height-count').innerText = currentStep;
-
-        const percent = (currentStep / quizData.length) * 100;
-        document.getElementById('progress-fill').style.width = percent + '%';
 
         const container = document.getElementById('options-container');
         container.innerHTML = '';
@@ -295,34 +416,36 @@
         });
 
         document.getElementById('feedback-msg').innerText = '';
-        clearCanvas(); // 切换题目时自动重置小白板草稿
+        clearCanvas();
     }
 
     function selectOption(index) {
+        if (isHopping) return;
         const item = quizData[currentStep];
         const fb = document.getElementById('feedback-msg');
 
         if (index === item.ans) {
-            fb.innerText = "✨ 答对了！往上爬了一步 🧗‍♂️";
+            fb.innerText = "✨ 答对了！小女孩往上跳了一步 🧗‍♀️";
             fb.className = "feedback correct";
-            setTimeout(() => {
-                currentStep++;
+            
+            const nextStep = currentStep + 1;
+            animateHop(nextStep, () => {
+                currentStep = nextStep;
                 if (currentStep < quizData.length) {
                     renderQuestion();
                 } else {
-                    document.getElementById('progress-fill').style.width = '100%';
                     document.getElementById('height-count').innerText = '22';
                     document.getElementById('game-body').classList.add('hidden');
                     document.getElementById('finish-screen').classList.remove('hidden');
                 }
-            }, 1000);
+            });
         } else {
             fb.innerText = "❌ 答错了，留在原地，再试一次！";
             fb.className = "feedback wrong";
         }
     }
 
-    // --- 电子小白板画板逻辑 ---
+    // --- 小白板逻辑 ---
     const canvas = document.getElementById('paintCanvas');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
@@ -374,6 +497,9 @@
     canvas.addEventListener('touchend', stopDrawing);
     canvas.addEventListener('touchmove', draw);
 
+    // 初始化运行
+    initMountainPath();
+    drawMountainScene();
     renderQuestion();
 </script>
 </body>
