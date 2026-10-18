@@ -2,406 +2,390 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>度量衡奇幻冒险 - 萌宠大闯关</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 森林小动物的数学大冒险 🐾</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+SC:wght@500;700;900&display=swap');
-        
+        :root {
+            --bg-color: #fce4ec;
+            --card-bg: #ffffff;
+            --primary-color: #ff80ab;
+            --primary-dark: #f50057;
+            --text-color: #4a148c;
+            --btn-bg: #80deea;
+            --btn-hover: #4dd0e1;
+        }
+
         body {
-            font-family: 'Noto Sans SC', sans-serif;
-            touch-action: manipulation;
+            font-family: 'Comic Sans MS', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            background-color: var(--card-bg);
+            border: 4px solid var(--primary-color);
+            border-radius: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 750px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .level-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .score-board {
+            font-size: 18px;
+            background: #fff9c4;
+            padding: 5px 15px;
+            border-radius: 15px;
+            border: 2px solid #fbc02d;
+        }
+
+        .question-box {
+            font-size: 20px;
+            margin: 20px 0;
+            min-height: 80px;
+        }
+
+        /* 输入框样式 */
+        input[type="text"], input[type="number"] {
+            font-size: 20px;
+            padding: 8px 15px;
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            text-align: center;
+            width: 120px;
+            outline: none;
+        }
+
+        /* 选项按钮 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            background-color: var(--btn-bg);
+            color: #004d40;
+            border: none;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px #00acc1;
+            transition: all 0.1s;
+        }
+
+        .btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .btn:active {
+            box-shadow: 0 1px #00acc1;
+            transform: translateY(3px);
+        }
+
+        /* 排序卡片 */
+        .drag-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .card-item {
+            background: #ffe0b2;
+            border: 2px solid #fb8c00;
+            padding: 10px 18px;
+            font-size: 20px;
+            border-radius: 12px;
+            cursor: pointer;
             user-select: none;
-            background: linear-gradient(135deg, #fef3c7 0%, #e0e7ff 50%, #fbcfe8 100%);
-        }
-        .font-game { font-family: 'Fredoka One', cursive; }
-
-        .card-pop {
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .card-pop:hover {
-            transform: translateY(-4px) scale(1.02);
         }
 
-        @keyframes bounce-gentle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        /* 小白板区域 */
+        .whiteboard-container {
+            margin: 15px 0;
+            display: none;
         }
-        .animate-bounce-gentle { animation: bounce-gentle 1.5s infinite ease-in-out; }
 
-        /* 浮动分数动画 */
-        @keyframes float-up {
-            0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
-            50% { opacity: 1; transform: translate(-50%, -30px) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -60px) scale(1); }
+        canvas {
+            border: 3px dashed #b0bec5;
+            background-color: #fafafa;
+            border-radius: 15px;
+            cursor: crosshair;
+            touch-action: none;
         }
-        .animate-float {
-            animation: float-up 1s ease-out forwards;
+
+        .tools {
+            margin-top: 8px;
         }
+
+        .feedback {
+            font-size: 20px;
+            font-weight: bold;
+            height: 30px;
+            margin-top: 15px;
+        }
+
+        .correct { color: #43a047; }
+        .wrong { color: #e53935; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-2 md:p-4 text-slate-800">
+<body>
 
-    <!-- 主容器 -->
-    <div class="relative w-full max-w-3xl bg-white/90 backdrop-blur-md border-4 border-amber-300 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[620px]">
+<div class="game-container">
+    <div class="header">
+        <div class="level-title" id="level-name">🌟 第 1 关：数位城堡</div>
+        <div class="score-board">⭐ 积分：<span id="score">0</span></div>
+    </div>
+
+    <!-- 题目区域 -->
+    <div id="game-body">
+        <div class="question-box" id="question-text">题目加载中...</div>
+
+        <!-- 交互区域 1：直接输入/填空 -->
+        <div id="input-zone" class="interactive-zone">
+            <input type="number" id="user-input" placeholder="答案">
+            <button class="btn" onclick="checkInputAnswer()">提交</button>
+        </div>
+
+        <!-- 交互区域 2：选择题 -->
+        <div id="choice-zone" class="interactive-zone options-grid hidden"></div>
+
+        <!-- 交互区域 3：排序选择 -->
+        <div id="sort-zone" class="interactive-zone hidden">
+            <p style="font-size:14px; color:#666;">点击下方卡片按顺序排列：</p>
+            <div class="drag-container" id="cards-pool"></div>
+            <div style="margin-top:10px;">你的排序：<span id="sorted-result" style="font-weight:bold; color:var(--primary-dark);"></span></div>
+            <button class="btn" style="margin-top:10px;" onclick="resetSort()">重置排序</button>
+            <button class="btn" style="margin-top:10px; background:#a5d6a7;" onclick="checkSortAnswer()">确认提交</button>
+        </div>
+
+        <!-- 交互区域 4：加减乘除小白板算草区 -->
+        <div id="whiteboard-zone" class="whiteboard-container">
+            <p style="font-size:14px; color:#555; margin:5px;">🎨 算草小白板（用手指或鼠标在此列竖式）：</p>
+            <canvas id="scratch-pad" width="400" height="150"></canvas>
+            <div class="tools">
+                <button class="btn" style="padding:5px 10px; font-size:14px; background:#ef9a9a;" onclick="clearCanvas()">清空画板</button>
+            </div>
+            <div style="margin-top:15px;">
+                最终答案：<input type="number" id="whiteboard-input" placeholder="输入答案">
+                <button class="btn" onclick="checkWhiteboardAnswer()">提交答案</button>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback-message"></div>
+    </div>
+
+    <!-- 通关结算界面 -->
+    <div id="finish-screen" class="hidden">
+        <h2>🎉 恭喜通关！小动物们太感谢你啦！ 🐾</h2>
+        <p style="font-size:22px;">你的总得分是：<span id="final-score" style="color:var(--primary-dark); font-weight:bold;">0</span> 分</p>
+        <button class="btn" onclick="location.reload()">再玩一次 🚀</button>
+    </div>
+</div>
+
+<script>
+    // 关卡题目设计
+    const gameLevels = [
+        // 第1关：数位填空
+        { level: 1, name: "🌟 第 1 关：数位城堡（填空）", type: "input", q: "🐱 852 中，数字 5 的数值是多少？", a: 50 },
         
-        <!-- 动态浮动分数提示 -->
-        <div id="scoreFloat" class="absolute left-1/2 top-1/3 z-50 pointer-events-none hidden font-black text-2xl md:text-4xl drop-shadow-md"></div>
+        // 第2关：比较大小选择题
+        { level: 2, name: "🥊 第 2 关：比大小擂台（选择）", type: "choice", q: "🐰 比较 654 和 430，哪个数目比较大？", choices: ["654", "430"], a: "654" },
+        
+        // 第3关：排序
+        { level: 3, name: "🚂 第 3 关：数字火车（从小到大排序）", type: "sort", q: "🐻 请将这组数字按【从小到大（顺序）】排列：", cards: [654, 198, 430, 312], a: [198, 312, 430, 654] },
+        
+        // 第4关：近似值
+        { level: 4, name: "🪄 第 4 关：近似值魔法（填空）", type: "input", q: "🦊 468 的【十位近似值】是多少？", a: 470 },
+        
+        // 第5关：加减乘除 + 小白板
+        { level: 5, name: "📝 第 5 关：终极计算（小白板做算草）", type: "whiteboard", q: "🐶 妈妈烤了 32 块饼干，平分给 4 个小朋友，每人分得多少块？（可在下方画板列竖式）", a: 8 }
+    ];
 
-        <!-- 顶栏信息 -->
-        <div class="bg-amber-100/90 border-b-2 border-amber-200 p-3 md:p-4 flex justify-between items-center z-10">
-            <div class="flex items-center space-x-2 md:space-x-4">
-                <span id="stageBadge" class="bg-amber-400 text-amber-950 px-3 py-1 rounded-2xl text-xs md:text-sm font-black flex items-center gap-1 shadow-sm">
-                    📏 阶段 1：长度城堡
-                </span>
-                <span class="text-rose-500 font-game text-sm md:text-base flex items-center gap-1">
-                    <i class="fas fa-star text-amber-400"></i> 得分: <span id="scoreText">0</span> / 100
-                </span>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button id="soundBtn" class="bg-purple-300 hover:bg-purple-400 text-purple-950 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
-                    <i class="fas fa-volume-up" id="soundIcon"></i> 音效
-                </button>
-            </div>
-        </div>
+    let currentStep = 0;
+    let totalScore = 0;
+    let selectedCards = [];
 
-        <!-- 关卡进度条 -->
-        <div class="w-full bg-amber-50 h-2 border-b border-amber-200">
-            <div id="progressBar" class="bg-gradient-to-r from-amber-400 to-rose-400 h-full w-0 transition-all duration-300"></div>
-        </div>
+    // 初始化画板
+    const canvas = document.getElementById('scratch-pad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
 
-        <!-- 倒计时环形/条形显示器 -->
-        <div class="bg-slate-100 px-4 py-2 flex items-center justify-between border-b border-slate-200">
-            <div class="flex items-center gap-2 text-xs font-black text-slate-600">
-                <i class="fas fa-stopwatch text-amber-500"></i>
-                <span id="timerText">剩余时间: 15秒</span>
-                <span id="doubleBonusTag" class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] animate-pulse">⚡ 10秒内答对得分双倍！</span>
-            </div>
-            <div class="w-1/3 bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                <div id="timerBar" class="bg-emerald-400 h-full w-full transition-all duration-1000 linear"></div>
-            </div>
-        </div>
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
 
-        <!-- 游戏核心交互区 -->
-        <div id="gameZone" class="relative flex-1 p-4 md:p-8 flex flex-col justify-between z-10">
-            <!-- 内容动态渲染 -->
-        </div>
+    function startDrawing(e) {
+        isDrawing = true;
+        ctx.beginPath();
+        const pos = getPos(e);
+        ctx.moveTo(pos.x, pos.y);
+    }
 
-        <!-- 底部勋章展览馆 -->
-        <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-around items-center text-xs font-bold text-slate-500">
-            <span class="flex items-center gap-1 opacity-40" id="badge1">📏 长度小能手</span>
-            <span class="flex items-center gap-1 opacity-40" id="badge2">⚖️ 重量大力士</span>
-            <span class="flex items-center gap-1 opacity-40" id="badge3">🧪 魔法炼金术士</span>
-        </div>
-    </div>
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#37474f';
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
 
-    <!-- 关卡/游戏结算弹窗 -->
-    <div id="rewardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white border-4 border-amber-400 rounded-3xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl">
-            <div id="modalEmoji" class="text-6xl mb-3 animate-bounce-gentle">🏆</div>
-            <h2 id="modalTitle" class="text-2xl font-black text-slate-800 mb-2">解锁新勋章！</h2>
-            <p id="modalDesc" class="text-slate-600 text-sm mb-6">你太棒了！获得了【长度小能手】勋章！</p>
-            <button id="modalBtn" class="w-full bg-gradient-to-r from-amber-400 to-rose-400 hover:from-amber-500 hover:to-rose-500 text-white font-black py-3 rounded-2xl shadow-lg transition active:scale-95 text-base">
-                进入下一关
-            </button>
-        </div>
-    </div>
+    function stopDrawing() { isDrawing = false; }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    <script>
-        // 音频合成器
-        let soundEnabled = true;
-        let audioCtx = null;
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
 
-        function getAudioContext() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return audioCtx;
-        }
+    // 载入关卡
+    function loadLevel() {
+        const currentData = gameLevels[currentStep];
+        document.getElementById('level-name').innerText = currentData.name;
+        document.getElementById('question-text').innerText = currentData.q;
+        document.getElementById('feedback-message').innerText = '';
 
-        const Sound = {
-            correct() {
-                if (!soundEnabled) return;
-                const ctx = getAudioContext();
-                const now = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.25);
-            },
-            wrong() {
-                if (!soundEnabled) return;
-                const ctx = getAudioContext();
-                const now = ctx.currentTime;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(220, now);
-                osc.frequency.linearRampToValueAtTime(130, now + 0.2);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.25);
-            },
-            win() {
-                if (!soundEnabled) return;
-                const ctx = getAudioContext();
-                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
-                    const now = ctx.currentTime + idx * 0.1;
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.3);
-                });
-            }
-        };
+        // 隐藏所有区域
+        document.getElementById('input-zone').classList.add('hidden');
+        document.getElementById('choice-zone').classList.add('hidden');
+        document.getElementById('sort-zone').classList.add('hidden');
+        document.getElementById('whiteboard-zone').style.display = 'none';
 
-        document.getElementById('soundBtn').onclick = () => {
-            soundEnabled = !soundEnabled;
-            document.getElementById('soundIcon').className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
-        };
-
-        // 题目数据
-        const stages = [
-            {
-                name: "阶段 1：长度城堡 📏",
-                badgeId: "badge1",
-                badgeName: "📏 长度小能手",
-                questions: [
-                    { q: "2 米 =", opts: ["20 厘米", "200 厘米", "2000 厘米", "20000 厘米"], a: 1 },
-                    { q: "7 m =", opts: ["70 cm", "700 cm", "7000 cm", "70000 cm"], a: 1 },
-                    { q: "400 厘米 =", opts: ["4 米", "40 米", "400 米", "4000 米"], a: 0 },
-                    { q: "500 cm =", opts: ["50 m", "5 m", "0.5 m", "500 m"], a: 1 },
-                    { q: "3 米 55 厘米 =", opts: ["35 厘米", "355 厘米", "3550 厘米", "3055 厘米"], a: 1 },
-                    { q: "850 cm =", opts: ["8 m 5 cm", "8 m 50 cm", "85 m 0 cm", "8 m 500 cm"], a: 1 },
-                    { q: "6 m 20 cm =", opts: ["620 cm", "602 cm", "6200 cm", "62 cm"], a: 0 },
-                    { q: "4 508 cm =", opts: ["45 m 8 cm", "4 m 508 cm", "45 m 80 cm", "450 m 8 cm"], a: 0 }
-                ]
-            },
-            {
-                name: "阶段 2：重量森林 ⚖️",
-                badgeId: "badge2",
-                badgeName: "⚖️ 重量大力士",
-                questions: [
-                    { q: "4 公斤 =", opts: ["40 克", "400 克", "4000 克", "40000 克"], a: 2 },
-                    { q: "3 kg =", opts: ["30 g", "300 g", "3000 g", "30000 g"], a: 2 },
-                    { q: "6 000 克 =", opts: ["6 公斤", "60 公斤", "600 公斤", "0.6 公斤"], a: 0 },
-                    { q: "7 000 g =", opts: ["70 kg", "7 kg", "700 kg", "0.7 kg"], a: 1 },
-                    { q: "3 公斤 450 克 =", opts: ["345 克", "3450 克", "3045 克", "34500 克"], a: 1 },
-                    { q: "4 200 g =", opts: ["4 kg 20 g", "4 kg 200 g", "42 kg 0 g", "4 kg 2 g"], a: 1 }
-                ]
-            },
-            {
-                name: "阶段 3：容量海洋 🧪",
-                badgeId: "badge3",
-                badgeName: "🧪 魔法炼金术士",
-                questions: [
-                    { q: "3 升 =", opts: ["30 毫升", "300 毫升", "3000 毫升", "30000 毫升"], a: 2 },
-                    { q: "6 l =", opts: ["60 ml", "600 ml", "6000 ml", "60000 ml"], a: 2 },
-                    { q: "4 000 毫升 =", opts: ["4 升", "40 升", "400 升", "0.4 升"], a: 0 },
-                    { q: "9 000 ml =", opts: ["90 l", "9 l", "900 l", "0.9 l"], a: 1 },
-                    { q: "1 升 560 毫升 =", opts: ["156 毫升", "1560 毫升", "1056 毫升", "15600 毫升"], a: 1 },
-                    { q: "7 580 ml =", opts: ["7 l 58 ml", "7 l 580 ml", "75 l 80 ml", "7 l 5800 ml"], a: 1 }
-                ]
-            }
-        ];
-
-        let currentStageIdx = 0;
-        let currentQuestionIdx = 0;
-        let score = 0;
-        let timeLeft = 15;
-        let timerInterval = null;
-
-        const gameZone = document.getElementById('gameZone');
-        const stageBadge = document.getElementById('stageBadge');
-        const scoreText = document.getElementById('scoreText');
-        const progressBar = document.getElementById('progressBar');
-        const timerText = document.getElementById('timerText');
-        const timerBar = document.getElementById('timerBar');
-        const doubleBonusTag = document.getElementById('doubleBonusTag');
-        const scoreFloat = document.getElementById('scoreFloat');
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            timeLeft = 15;
-            updateTimerUI();
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerUI();
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    handleTimeout();
-                }
-            }, 1000);
-        }
-
-        function updateTimerUI() {
-            timerText.innerText = `剩余时间: ${timeLeft}秒`;
-            const pct = (timeLeft / 15) * 100;
-            timerBar.style.width = `${pct}%`;
-
-            if (timeLeft > 5) {
-                timerBar.className = "bg-emerald-400 h-full w-full transition-all duration-1000 linear";
-            } else {
-                timerBar.className = "bg-rose-500 h-full w-full transition-all duration-1000 linear animate-pulse";
-            }
-
-            if (timeLeft >= 5) { // 已过去 0-10 秒（剩余 15-5 秒），处于双倍时间
-                doubleBonusTag.className = "bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] animate-pulse";
-                doubleBonusTag.innerText = "⚡ 10秒内答对得分双倍！";
-            } else {
-                doubleBonusTag.className = "bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-[10px]";
-                doubleBonusTag.innerText = "⏱️ 基础得分时间";
-            }
-        }
-
-        function handleTimeout() {
-            Sound.wrong();
-            applyScoreChange(-5, "⌛ 超时扣分！");
-            nextQuestionOrStage();
-        }
-
-        function loadQuestion() {
-            const currentStage = stages[currentStageIdx];
-            const qData = currentStage.questions[currentQuestionIdx];
-
-            stageBadge.innerText = currentStage.name;
-            const totalQuestionsInStage = currentStage.questions.length;
-            const progress = ((currentQuestionIdx) / totalQuestionsInStage) * 100;
-            progressBar.style.width = `${progress}%`;
-
-            gameZone.innerHTML = `
-                <div class="flex-1 flex flex-col justify-center items-center max-w-lg mx-auto w-full">
-                    <div class="bg-indigo-50/90 border-2 border-indigo-200 rounded-3xl p-6 w-full text-center shadow-md mb-6">
-                        <span class="text-xs font-bold text-indigo-500 bg-indigo-100 px-3 py-1 rounded-full mb-3 inline-block">
-                            第 ${currentQuestionIdx + 1} / ${totalQuestionsInStage} 题
-                        </span>
-                        <h3 class="text-xl md:text-3xl font-black text-slate-800">${qData.q} <span class="text-rose-500">?</span></h3>
-                    </div>
-
-                    <div id="optionsContainer" class="grid grid-cols-2 gap-3 md:gap-4 w-full"></div>
-                </div>
-            `;
-
-            const optionsContainer = document.getElementById('optionsContainer');
-            qData.opts.forEach((optText, idx) => {
+        if (currentData.type === 'input') {
+            document.getElementById('input-zone').classList.remove('hidden');
+            document.getElementById('user-input').value = '';
+        } else if (currentData.type === 'choice') {
+            const choiceZone = document.getElementById('choice-zone');
+            choiceZone.classList.remove('hidden');
+            choiceZone.innerHTML = '';
+            currentData.choices.forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "card-pop bg-white border-2 border-amber-300 hover:border-amber-400 hover:bg-amber-50 py-3.5 px-4 rounded-2xl font-bold text-slate-700 text-sm md:text-base shadow-sm transition active:scale-95 flex items-center justify-center gap-2";
-                btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 text-xs flex items-center justify-center font-black">${String.fromCharCode(65 + idx)}</span>${optText}`;
-                btn.onclick = () => checkAnswer(idx);
-                optionsContainer.appendChild(btn);
+                btn.className = 'btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkChoiceAnswer(opt);
+                choiceZone.appendChild(btn);
             });
-
-            startTimer();
+        } else if (currentData.type === 'sort') {
+            document.getElementById('sort-zone').classList.remove('hidden');
+            selectedCards = [];
+            renderSortCards();
+        } else if (currentData.type === 'whiteboard') {
+            document.getElementById('whiteboard-zone').style.display = 'block';
+            document.getElementById('whiteboard-input').value = '';
+            clearCanvas();
         }
+    }
 
-        function checkAnswer(selectedIdx) {
-            clearInterval(timerInterval);
-            const currentStage = stages[currentStageIdx];
-            const qData = currentStage.questions[currentQuestionIdx];
+    // 检查输入题
+    function checkInputAnswer() {
+        const val = Number(document.getElementById('user-input').value);
+        verifyAnswer(val === gameLevels[currentStep].a);
+    }
 
-            if (selectedIdx === qData.a) {
-                Sound.correct();
-                let earned = (timeLeft >= 5) ? 20 : 10; // 前10秒（即剩余>=5秒）得20分，否则得10分
-                let label = (timeLeft >= 5) ? "⚡ 双倍奖励 +20" : "👍 正确 +10";
-                applyScoreChange(earned, label);
-                nextQuestionOrStage();
-            } else {
-                Sound.wrong();
-                applyScoreChange(-5, "💥 答错 -5");
-                startTimer(); // 答错重试，计时器继续
+    // 检查选择题
+    function checkChoiceAnswer(opt) {
+        verifyAnswer(opt == gameLevels[currentStep].a);
+    }
+
+    // 渲染与检查排序题
+    function renderSortCards() {
+        const pool = document.getElementById('cards-pool');
+        pool.innerHTML = '';
+        const currentData = gameLevels[currentStep];
+
+        currentData.cards.forEach(num => {
+            if (!selectedCards.includes(num)) {
+                const card = document.createElement('div');
+                card.className = 'card-item';
+                card.innerText = num;
+                card.onclick = () => { selectedCards.push(num); renderSortCards(); };
+                pool.appendChild(card);
             }
-        }
+        });
+        document.getElementById('sorted-result').innerText = selectedCards.join(' ➔ ');
+    }
 
-        function applyScoreChange(amount, label) {
-            score += amount;
-            if (score < 0) score = 0;
-            if (score > 100) score = 100; // 满分封顶100分
-            scoreText.innerText = score;
+    function resetSort() { selectedCards = []; renderSortCards(); }
 
-            // 显示浮动动画
-            scoreFloat.innerText = label;
-            scoreFloat.className = `absolute left-1/2 top-1/3 z-50 pointer-events-none font-black text-2xl md:text-4xl drop-shadow-md animate-float ${amount > 0 ? 'text-emerald-500' : 'text-rose-500'}`;
-            scoreFloat.classList.remove('hidden');
+    function checkSortAnswer() {
+        const target = gameLevels[currentStep].a;
+        const isCorrect = JSON.stringify(selectedCards) === JSON.stringify(target);
+        verifyAnswer(isCorrect);
+    }
 
+    // 检查小白板计算题
+    function checkWhiteboardAnswer() {
+        const val = Number(document.getElementById('whiteboard-input').value);
+        verifyAnswer(val === gameLevels[currentStep].a);
+    }
+
+    // 统一核对逻辑
+    function verifyAnswer(isCorrect) {
+        const fb = document.getElementById('feedback-message');
+        if (isCorrect) {
+            fb.innerText = "✨ 回答正确！好棒！";
+            fb.className = "feedback correct";
+            totalScore += 20;
+            document.getElementById('score').innerText = totalScore;
             setTimeout(() => {
-                scoreFloat.classList.add('hidden');
-            }, 1000);
+                currentStep++;
+                if (currentStep < gameLevels.length) {
+                    loadLevel();
+                } else {
+                    showFinalScreen();
+                }
+            }, 1200);
+        } else {
+            fb.innerText = "❌ 答错了，再试一次哦！";
+            fb.className = "feedback wrong";
         }
+    }
 
-        function nextQuestionOrStage() {
-            const currentStage = stages[currentStageIdx];
-            currentQuestionIdx++;
+    function showFinalScreen() {
+        document.getElementById('game-body').classList.add('hidden');
+        document.getElementById('finish-screen').classList.remove('hidden');
+        document.getElementById('final-score').innerText = totalScore;
+    }
 
-            if (currentQuestionIdx >= currentStage.questions.length) {
-                unlockBadge(currentStage.badgeId);
-                showStageRewardModal();
-            } else {
-                loadQuestion();
-            }
-        }
-
-        function unlockBadge(badgeId) {
-            const b = document.getElementById(badgeId);
-            b.classList.remove('opacity-40');
-            b.classList.add('opacity-100', 'text-amber-600', 'scale-110');
-        }
-
-        function showStageRewardModal() {
-            clearInterval(timerInterval);
-            Sound.win();
-            const modal = document.getElementById('rewardModal');
-            const title = document.getElementById('modalTitle');
-            const desc = document.getElementById('modalDesc');
-            const btn = document.getElementById('modalBtn');
-            const currentStage = stages[currentStageIdx];
-
-            if (currentStageIdx < stages.length - 1) {
-                title.innerText = "🎉 阶段通关！";
-                desc.innerText = `太棒了！你完成了【${currentStage.name}】，解锁了勋章【${currentStage.badgeName}】！目前得分：${score} 分！`;
-                btn.innerText = "进入下一个阶段";
-                btn.onclick = () => {
-                    modal.classList.add('hidden');
-                    currentStageIdx++;
-                    currentQuestionIdx = 0;
-                    loadQuestion();
-                };
-            } else {
-                title.innerText = "🏆 终极大通关！";
-                desc.innerText = `恭喜你赢得了全部 3 个勋章！最终成绩：${score} / 100 分！`;
-                btn.innerText = "重新开始挑战";
-                btn.onclick = () => {
-                    modal.classList.add('hidden');
-                    currentStageIdx = 0;
-                    currentQuestionIdx = 0;
-                    score = 0;
-                    scoreText.innerText = 0;
-                    loadQuestion();
-                };
-            }
-            modal.classList.remove('hidden');
-        }
-
-        // 启动游戏
-        loadQuestion();
-    </script>
+    // 启动游戏
+    loadLevel();
+</script>
 </body>
 </html>
