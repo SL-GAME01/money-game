@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐾 4年级数学：森林冒险大挑战 🌲</title>
+    <title>🐾 4年级数学：森林大冒险 🌲</title>
     <style>
         :root {
             --bg-color: #f0f8ff;
             --card-bg: #ffffff;
             --primary-color: #4caf50;
             --primary-dark: #2e7d32;
-            --accent-color: #ff9800;
             --text-color: #333333;
         }
 
@@ -69,8 +68,7 @@
             min-height: 60px;
         }
 
-        /* 统一输入框与按钮 */
-        input[type="text"], input[type="number"] {
+        input[type="text"] {
             font-size: 18px;
             padding: 8px 12px;
             border: 2px solid var(--primary-color);
@@ -97,7 +95,6 @@
         .btn:hover { background-color: #66bb6a; }
         .btn:active { box-shadow: 0 1px #388e3c; transform: translateY(3px); }
 
-        /* 选择题网格 */
         .options-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -105,7 +102,6 @@
             margin-top: 15px;
         }
 
-        /* 卡片排序 */
         .drag-container {
             display: flex;
             justify-content: center;
@@ -123,20 +119,6 @@
             cursor: pointer;
             user-select: none;
             font-weight: bold;
-        }
-
-        /* 小白板区 */
-        .whiteboard-container {
-            margin: 15px 0;
-            display: none;
-        }
-
-        canvas {
-            border: 2px dashed #90a4ae;
-            background-color: #fafafa;
-            border-radius: 12px;
-            cursor: crosshair;
-            touch-action: none;
         }
 
         .feedback {
@@ -162,16 +144,16 @@
     <div id="game-body">
         <div class="question-box" id="question-text">题目加载中...</div>
 
-        <!-- 交互类型 1：填空题 -->
+        <!-- 交互 1：填空题 -->
         <div id="input-zone" class="interactive-zone">
             <div id="multi-inputs-container"></div>
             <button class="btn" onclick="checkInputAnswer()" style="margin-top:15px;">提交答案</button>
         </div>
 
-        <!-- 交互类型 2：选择题 -->
+        <!-- 交互 2：选择题 -->
         <div id="choice-zone" class="interactive-zone options-grid hidden"></div>
 
-        <!-- 交互类型 3：排序题 -->
+        <!-- 交互 3：排序题 -->
         <div id="sort-zone" class="interactive-zone hidden">
             <p style="font-size:14px; color:#666;">点击卡片依次选择排列：</p>
             <div class="drag-container" id="cards-pool"></div>
@@ -180,111 +162,49 @@
             <button class="btn" onclick="checkSortAnswer()">确认提交</button>
         </div>
 
-        <!-- 交互类型 4：小白板算草计算题 -->
-        <div id="whiteboard-zone" class="whiteboard-container">
-            <p style="font-size:14px; color:#555; margin:5px;">🎨 竖式算草小白板（可在此书写计算）：</p>
-            <canvas id="scratch-pad" width="450" height="150"></canvas>
-            <div>
-                <button class="btn" style="padding:4px 10px; font-size:13px; background:#ef9a9a;" onclick="clearCanvas()">清空画板</button>
-            </div>
-            <div style="margin-top:12px;">
-                答案：<input type="text" id="whiteboard-input" placeholder="输入最终答案">
-                <button class="btn" onclick="checkWhiteboardAnswer()">提交答案</button>
-            </div>
-        </div>
-
         <div class="feedback" id="feedback-message"></div>
     </div>
 
     <!-- 通关界面 -->
     <div id="finish-screen" class="hidden">
-        <h2>🎉 恭喜！你已顺利完成了全部题目的挑战！ 🏆</h2>
+        <h2>🎉 恭喜！你已顺利通关第 1 至第 4 关所有的挑战！ 🏆</h2>
         <button class="btn" onclick="location.reload()">重新开始大冒险 🚀</button>
     </div>
 </div>
 
 <script>
-    // 包含练习册中的所有原题
+    // 关卡 1 到 关卡 4 的全部题目
     const questionsDatabase = [
-        // --- 关卡 1：数位与数值分析式（填空） ---
+        // --- 关卡 1：数位与数值分析式 ---
         { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：48 215 = (a)个万 + (b)个千 + (c)个百 + (d)个十 + (e)个一", inputs: ["a", "b", "c", "d", "e"], a: ["4", "8", "2", "1", "5"] },
-        { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：39 608 = 3万 + (a) + (b) + (c)", inputs: ["a", "b", "c"], a: ["9000", "600", "8"] },
-        { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：63 752 = 60 000 + (a) + (b) + (c)", inputs: ["a", "b", "c"], a: ["3000", "700", "50"] },
-        { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：19 148 = (a) + (b) + (c) + (d) + 8 + 6", inputs: ["a", "b", "c", "d"], a: ["10000", "9000", "100", "40"] },
+        { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：39 608 = (a) + (b) + (c) + (d) + (e)", inputs: ["万位", "千位", "百位", "十位", "个位"], a: ["3个万", "9个千", "6个百", "0个十", "8个一"] },
+        { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：63 752 = 60 000 + (a) + (b) + (c) + (d)", inputs: ["a", "b", "c", "d"], a: ["3000", "700", "50", "2"] },
+        { category: "🏰 第一关：数位与数值分析式", type: "multi-input", q: "填一填：19 148 = (a) + (b) + (c) + (d) + (e)", inputs: ["a", "b", "c", "d", "e"], a: ["10000", "9000", "100", "40", "8"] },
 
-        // --- 关卡 2：比较与估算（选择） ---
-        { category: "🥊 第二关：比较与估算", type: "choice", q: "圈出比较大的数目：[21 679] 与 [12 679]", choices: ["21679", "12679"], a: "21679" },
-        { category: "🥊 第二关：比较与估算", type: "choice", q: "圈出比较大的数目：[51 630] 与 [50 163]", choices: ["51630", "50163"], a: "51630" },
-        { category: "🥊 第二关：比较与估算", type: "choice", q: "圈出比较大的数目：[38 256] 与 [38 265]", choices: ["38256", "38265"], a: "38265" },
-        { category: "🥊 第二关：比较与估算", type: "choice", q: "圈出比较大的数目：[66 689] 与 [66 886]", choices: ["66689", "66886"], a: "66886" },
-        { category: "🥊 第二关：比较与估算", type: "choice", q: "容器 A 里有 5 000 颗瓜子。容器 B 里的瓜子 {多于 , 少于} 15 000 颗。", choices: ["多于", "少于"], a: "多于" },
-        { category: "🥊 第二关：比较与估算", type: "choice", q: "容器 A 里有 12 000 颗瓜子。容器 B 里大约有 {5 000 , 6 000} 颗瓜子。", choices: ["5000", "6000"], a: "6000" },
+        // --- 关卡 2：比较数目 ---
+        { category: "🥊 第二关：比较数目", type: "choice", q: "圈出比较大的数目：[21 679] 与 [12 679]", choices: ["21679", "12679"], a: "21679" },
+        { category: "🥊 第二关：比较数目", type: "choice", q: "圈出比较大的数目：[51 630] 与 [50 163]", choices: ["51630", "50163"], a: "51630" },
+        { category: "🥊 第二关：比较数目", type: "choice", q: "圈出比较大的数目：[38 256] 与 [38 265]", choices: ["38256", "38265"], a: "38265" },
+        { category: "🥊 第二关：比较数目", type: "choice", q: "圈出比较大的数目：[66 689] 与 [66 886]", choices: ["66689", "66886"], a: "66886" },
 
-        // --- 关卡 3：排列数目（拖拽/点击排序） ---
+        // --- 关卡 3：排列数目 ---
         { category: "🚂 第三关：排列数目", type: "sort", q: "请按【顺序（从小到大）】排列：", cards: ["77629", "26779", "76279", "62297", "26279"], a: ["26279", "26779", "62297", "76279", "77629"] },
         { category: "🚂 第三关：排列数目", type: "sort", q: "请按【逆序（从大到小）】排列：", cards: ["31584", "13458", "54831", "45318", "13584"], a: ["54831", "45318", "31584", "13584", "13458"] },
 
-        // --- 关卡 4：写出近似值（填空） ---
+        // --- 关卡 4：写出近似值 ---
         { category: "🪄 第四关：写出近似值", type: "multi-input", q: "15 635 的【十位近似值】是多少？", inputs: ["答案"], a: ["15640"] },
         { category: "🪄 第四关：写出近似值", type: "multi-input", q: "27 834 的【十位近似值】是多少？", inputs: ["答案"], a: ["27830"] },
         { category: "🪄 第四关：写出近似值", type: "multi-input", q: "32 194 的【千位近似值】是多少？", inputs: ["答案"], a: ["32000"] },
-        { category: "🪄 第四关：写出近似值", type: "multi-input", q: "72 708 的【千位近似值】是多少？", inputs: ["答案"], a: ["72000"] },
+        { category: "🪄 第四关：写出近似值", type: "multi-input", q: "72 708 的【千位近似值】是多少？", inputs: ["答案"], a: ["73000"] },
         { category: "🪄 第四关：写出近似值", type: "multi-input", q: "80 245 的【万位近似值】是多少？", inputs: ["答案"], a: ["80000"] },
         { category: "🪄 第四关：写出近似值", type: "multi-input", q: "46 671 的【万位近似值】是多少？", inputs: ["答案"], a: ["50000"] },
-        { category: "🪄 第四关：写出近似值", type: "multi-input", q: "54 972 的【百位近似值】是多少？", inputs: ["答案"], a: ["54900"] },
-        { category: "🪄 第四关：写出近似值", type: "multi-input", q: "66 409 的【百位近似值】是多少？", inputs: ["答案"], a: ["66400"] },
-
-        // --- 关卡 5：加减乘除与混合运算（小白板草稿） ---
-        { category: "📝 第五关：加减运算", type: "whiteboard", q: "31 456 + 26 423 =", a: "57879" },
-        { category: "📝 第五关：加减运算", type: "whiteboard", q: "21 307 + 15 329 + 31 169 =", a: "67805" },
-        { category: "📝 第五关：加减运算", type: "whiteboard", q: "54 658 + 5 374 + 3 814 + 470 =", a: "64316" },
-        { category: "📝 第五关：加减运算", type: "whiteboard", q: "58 429 - 37 215 =", a: "21214" },
-        { category: "📝 第五关：加减运算", type: "whiteboard", q: "286 594 - 21 537 =", a: "265057" },
-        { category: "📝 第五关：加减运算", type: "whiteboard", q: "363 984 - 2 451 - 25 672 =", a: "335861" },
-        { category: "📝 第五关：加减混合运算", type: "whiteboard", q: "23 713 + 36 282 - 19 514 =", a: "40481" },
-        { category: "📝 第五关：加减混合运算", type: "whiteboard", q: "56 784 - 32 562 + 51 648 =", a: "75870" },
-        { category: "📝 第五关：加减混合运算", type: "whiteboard", q: "42 318 + 15 679 - 26 934 =", a: "31063" },
-        { category: "📝 第五关：加减混合运算", type: "whiteboard", q: "41 529 - 6 398 + 16 482 =", a: "51613" },
-        { category: "📝 第五关：乘法运算", type: "whiteboard", q: "3 × 32 123 =", a: "96369" },
-        { category: "📝 第五关：乘法运算", type: "whiteboard", q: "18 × 523 =", a: "9414" },
-        { category: "📝 第五关：乘法运算", type: "whiteboard", q: "1 048 × 10 =", a: "10480" },
-        { category: "📝 第五关：乘法运算", type: "whiteboard", q: "309 × 100 =", a: "30900" },
-        { category: "📝 第五关：乘法运算", type: "whiteboard", q: "74 × 1 000 =", a: "74000" },
-        { category: "📝 第五关：除法运算", type: "whiteboard", q: "16 500 ÷ 3 =", a: "5500" },
-        { category: "📝 第五关：除法运算", type: "whiteboard", q: "52 000 ÷ 10 =", a: "5200" },
-        { category: "📝 第五关：乘除混合运算", type: "whiteboard", q: "2 466 × 4 ÷ 8 =", a: "1233" },
-        { category: "📝 第五关：乘除混合运算", type: "whiteboard", q: "9 506 ÷ 7 × 9 =", a: "12222" },
-        { category: "📝 第五关：乘除混合运算", type: "whiteboard", q: "3 028 × 8 ÷ 16 =", a: "1514" },
-        { category: "📝 第五关：乘除混合运算", type: "whiteboard", q: "27 720 ÷ 45 × 14 =", a: "8624" }
+        { category: "🪄 第四关：写出近似值", type: "multi-input", q: "54 972 的【百位近似值】是多少？", inputs: ["答案"], a: ["55000"] },
+        { category: "🪄 第四关：写出近似值", type: "multi-input", q: "66 409 的【百位近似值】是多少？", inputs: ["答案"], a: ["66400"] }
     ];
 
     let currentIndex = 0;
     let selectedSortCards = [];
 
-    // 画板逻辑
-    const canvas = document.getElementById('scratch-pad');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('touchstart', startDrawing);
-    canvas.addEventListener('touchmove', draw);
-    canvas.addEventListener('touchend', stopDrawing);
-
-    function startDrawing(e) { isDrawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); }
-    function draw(e) { if (!isDrawing) return; const pos = getPos(e); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#37474f'; ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
-    function stopDrawing() { isDrawing = false; }
-    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-    function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-
-    // 载入题目
     function loadQuestion() {
         const item = questionsDatabase[currentIndex];
         document.getElementById('level-name').innerText = item.category;
@@ -293,11 +213,9 @@
         document.getElementById('total-q').innerText = questionsDatabase.length;
         document.getElementById('feedback-message').innerText = '';
 
-        // 隐藏所有交互区域
         document.getElementById('input-zone').classList.add('hidden');
         document.getElementById('choice-zone').classList.add('hidden');
         document.getElementById('sort-zone').classList.add('hidden');
-        document.getElementById('whiteboard-zone').style.display = 'none';
 
         if (item.type === 'multi-input') {
             document.getElementById('input-zone').classList.remove('hidden');
@@ -325,10 +243,6 @@
             document.getElementById('sort-zone').classList.remove('hidden');
             selectedSortCards = [];
             renderSortCards();
-        } else if (item.type === 'whiteboard') {
-            document.getElementById('whiteboard-zone').style.display = 'block';
-            document.getElementById('whiteboard-input').value = '';
-            clearCanvas();
         }
     }
 
@@ -366,11 +280,6 @@
         verifyAnswer(isCorrect);
     }
 
-    function checkWhiteboardAnswer() {
-        const val = document.getElementById('whiteboard-input').value.trim();
-        verifyAnswer(val === questionsDatabase[currentIndex].a);
-    }
-
     function verifyAnswer(isCorrect) {
         const fb = document.getElementById('feedback-message');
         if (isCorrect) {
@@ -391,7 +300,6 @@
         }
     }
 
-    // 启动游戏
     loadQuestion();
 </script>
 </body>
